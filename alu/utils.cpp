@@ -3,9 +3,10 @@
 // Un regalito, puede que quieran modificarla
 // Dado un arreglo de char str y un socket descriptor s, hace una lectura
 // bloqueante sobre s y llena el buffer str con los bytes leídos.
-int read_sock(char str[], int s) 
+int read_sock(int s) 
 {
     int n;
+    char str[MENSAJE_MAXIMO];
     n = recv(s, str, 2*MENSAJE_MAXIMO, 0);
 
     if (n == 0) 
@@ -39,7 +40,20 @@ void broadcast(vector<int>& sockets, struct request* req)
 // agrega los sockets asociados al vector v.
 void accept_conns(int s, vector<int>& v)
 {
-     // TO DO  
+	int socketNuevo;
+	struct sockaddr_in remote;
+	socklen_t client_len;
+
+	while(1)
+	{
+		if((socketNuevo = accept(s, (struct sockaddr *) &remote, &client_len)) < 0){
+			perror('Aceptando la conexion entrante');
+			exit(1)
+		}
+		else{
+			
+		}
+	}
 }
 // Dado un puerto lsn_port devuelve un socket en estado listen asociado
 // a todas las interfaces de red local y a ese puerto (ej 127.0.0.1:lsn_port)

@@ -5,6 +5,14 @@ using namespace std;
 // compartir variables y que por lo tanto las herramientas de sincronziacion
 // como semaforos son perfectamente validas.
 
+void connection_handler(int socket_desc){
+    while(1)
+    {
+        if(read_sock(socket_desc)==-1){
+            break;
+        }
+    }
+}
 
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
 void draw()
@@ -48,7 +56,17 @@ void server_accept_conns(int s)
     while(1)
     {
         /* Acpetar nueva celula*/
-        /* TO DO*/
+        client_len = sizeof(remote);
+        if((socketNuevo = accept(s, (struct sockaddr *) &remote, (socklen_t*) &client_len)) < 0){
+            perror("Error aceptando");
+            exit(-1);
+        }
+        else{
+            clientes++;
+            
+            threads[clientes] = thread(connection_handler, socketNuevo);
+            
+        }
         
         /* Si ya hay suficientes para armar matriz de 3x3 o para agregar L*/
         /* Actualizar el mapa permitiendo que sigan llegando conexiones */
@@ -58,6 +76,10 @@ void server_accept_conns(int s)
         /* TO DO*/   
 
     }
+
+    threads[clientes].join();
+    close(socketNuevo);
+    close(s);
 }
 
 int main(int argc, char* argv[])
@@ -65,6 +87,38 @@ int main(int argc, char* argv[])
     int s;
     thread ths[MAX_CLIENTS];
     s = set_acc_socket(atoi(argv[1]));
+
+    int clientes = 0;
+    int len, socketNuevo;
+    struct sockaddr_in local;
+    struct sockaddr_in remote;
+    struct client_addr;
+    socklen_t client_len;
+    thread threads[MAX_CLIENTS];
+
+    /* crea socket */
+    if ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }
+
+    /* configura dirección */
+    local.sin_family = AF_INET;
+    local.sin_port = htons(PORT);
+    local.sin_addr.s_addr = INADDR_ANY;
+
+
+    /* linkea socket con dirección */
+    if (bind(s, (struct sockaddr *)&local, sizeof(local)) < 0) {
+        perror("bind");
+        exit(1);
+    }
+
+    /* setea socket a modo "listen"*/
+    if (listen(s, 10) == -1) {
+        perror("listen");
+        exit(1);
+    }
 
     /* Levantar servicios y aceptar conexiones */
    /* TO DO*/
