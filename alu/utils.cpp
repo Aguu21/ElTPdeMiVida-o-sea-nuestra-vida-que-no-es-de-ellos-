@@ -3,7 +3,7 @@
 // Un regalito, puede que quieran modificarla
 // Dado un arreglo de char str y un socket descriptor s, hace una lectura
 // bloqueante sobre s y llena el buffer str con los bytes leídos.
-int read_sock(int s) 
+int read_sock(char str[], int s) 
 {
     int n;
     char str[MENSAJE_MAXIMO];
@@ -59,7 +59,7 @@ void accept_conns(int s, vector<int>& v)
 // a todas las interfaces de red local y a ese puerto (ej 127.0.0.1:lsn_port)
 int set_acc_socket(int lsn_port)
 {
-     // TO DO  
+    break;// TO DO  
 }
 
 // Setea un socket al modo nobloqueante

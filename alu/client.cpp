@@ -93,7 +93,57 @@ int run_cell(int port)
 
 int main(int argc, char* argv[]){
     int pid;
+    int socket_fd;
+    int len;
+    struct sockaddr_in  remote;
+    struct hostent *hp;
+    struct in_addr addr;
+    char buf[MENSAJE_MAXIMO];
+
+    if ((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("creando socket");
+        exit(1);
+    }
+
+    /* Establecer la dirección a la cual conectarse. */
+    remote.sin_family = AF_INET;
+    remote.sin_port = htons(PORT);
+    inet_pton(AF_INET, "127.0.0.1", &(remote.sin_addr));
+
+    /* Conectarse. */
+    int s = connect(socket_fd, (struct sockaddr *)&remote, sizeof(remote));
+    if ( s == -1) {
+        perror("conectandose");
+        exit(1);
+    }
+
+    do{
+        printf("> ");
+        fgets(buf, MENSAJE_MAXIMO, stdin);
+        int s = send(socket_fd, buf, strlen(buf), 0);
+        if (s == -1) {
+            perror("enviando");
+            exit(1);
+        }
+
+    }while(!feof(stdin));
+
+    /* Cerrar el socket. */
+    close(socket_fd);
+
+
     /* Lanzar tantos procesos celulas como los indicados por argv[1]*/
     /* TO DO*/
+    /*
+    Se conectan al servidor
+    
+    Les llega del servidor sus vecinos
+    Hacen conexiones con ellos
+    Avisan que estan listas
+    Comienza el juego
+    Actualizan su estado
+    Se lo comunican al servidor
+    Avisan que terminaron
+    */
     
 }

@@ -8,7 +8,7 @@ using namespace std;
 void connection_handler(int socket_desc){
     while(1)
     {
-        if(read_sock(socket_desc)==-1){
+        if(read_sock(char str[MENSAJE_MAXIMO],socket_desc)==(-1)){
             break;
         }
     }
@@ -43,16 +43,22 @@ void map_creator(/* TO DO*/)
     // Avisar a las celulas que correspondan la nueva estructura de vecinos
     // TIP: Puede ser util separar el caso inicial del resto, sobre todo para
     //      facilitar luego el testeo
+    int N;
     if(N ==3){
-        base_case_3x3(/* TO DO*/);
+        //base_case_3x3(/* TO DO*/);
         return;
     }
-    general_case_nxn(/* TO DO*/);
+    //general_case_nxn(/* TO DO*/);
 
 }
 
 void server_accept_conns(int s)
 {
+    int clientes=0;
+    int client_len=0;
+    thread threads[5];
+    int socketNuevo;
+    struct sockaddr_in remote;
     while(1)
     {
         /* Acpetar nueva celula*/
@@ -84,17 +90,9 @@ void server_accept_conns(int s)
 
 int main(int argc, char* argv[])
 {
-    int s;
-    thread ths[MAX_CLIENTS];
-    s = set_acc_socket(atoi(argv[1]));
-
-    int clientes = 0;
-    int len, socketNuevo;
+    int s, s1, s2, len;
     struct sockaddr_in local;
-    struct sockaddr_in remote;
-    struct client_addr;
-    socklen_t client_len;
-    thread threads[MAX_CLIENTS];
+    thread threads[2];
 
     /* crea socket */
     if ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -120,9 +118,25 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+
+    threads[0]= thread(server_accept_conns, s);
+
+    threads[0].join();
+    close(s);
     /* Levantar servicios y aceptar conexiones */
    /* TO DO*/
+    /*
+    Hacer listening
+    Aceptar Clientes
 
+    Conectar clientes entre si
+    Chequear que hay 9 clientes conectados
+    Comenzar el juego
+    envia mensajes a cada cliente de que empezo
+    termina el turno, anexar clientes si es que hay suficientes
+    actualiza los vecinos
+    empieza otro turno
+    */
     return 0;
 }
 

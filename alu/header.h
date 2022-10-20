@@ -17,7 +17,7 @@
 #include <thread>
 #include <stdio.h>
 #include <iostream>
-#include <sys/sendfile.h>
+#include <sys/uio.h>
 #include <vector>
 #include <semaphore.h>
 #include <mutex>
@@ -49,7 +49,7 @@ struct client_request{
 int read_sock(char str[], int s);
 void broadcast(vector<int>& sockets, struct request* req);
 void get_request(struct request* req, int s);
-void send_request(struct request* req, int s)
+void send_request(struct request* req, int s);
 int set_acc_socket(int lsn_port);
 void accept_conns(int s, vector<int>& v );
 
