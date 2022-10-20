@@ -3,7 +3,7 @@
 // Un regalito, puede que quieran modificarla
 // Dado un arreglo de char str y un socket descriptor s, hace una lectura
 // bloqueante sobre s y llena el buffer str con los bytes leídos.
-int read_sock(char str[], int s) 
+int read_sock(int s) 
 {
     int n;
     char str[MENSAJE_MAXIMO];
@@ -16,7 +16,7 @@ int read_sock(char str[], int s)
         exit(1);
     }
     str[n] = '\0';
-    printf("%d\n",n);
+    //printf("%d\n",n);
     printf("recibi: %s\n",str);
     return 0;
 }
@@ -43,23 +43,23 @@ void accept_conns(int s, vector<int>& v)
 	int socketNuevo;
 	struct sockaddr_in remote;
 	socklen_t client_len;
-
+    int clientes;
+    thread threads[MAX_CLIENTS];
 	while(1)
 	{
 		if((socketNuevo = accept(s, (struct sockaddr *) &remote, &client_len)) < 0){
-			perror('Aceptando la conexion entrante');
-			exit(1)
+			perror("Aceptando la conexion entrante");
+			exit(1);
 		}
-		else{
-			
-		}
+		
 	}
 }
 // Dado un puerto lsn_port devuelve un socket en estado listen asociado
 // a todas las interfaces de red local y a ese puerto (ej 127.0.0.1:lsn_port)
 int set_acc_socket(int lsn_port)
 {
-    break;// TO DO  
+    // TO DO  
+    return 0;
 }
 
 // Setea un socket al modo nobloqueante

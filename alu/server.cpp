@@ -8,7 +8,7 @@ using namespace std;
 void connection_handler(int socket_desc){
     while(1)
     {
-        if(read_sock(char str[MENSAJE_MAXIMO],socket_desc)==(-1)){
+        if(read_sock(socket_desc)==(-1)){
             break;
         }
     }
@@ -117,7 +117,6 @@ int main(int argc, char* argv[])
         perror("listen");
         exit(1);
     }
-
 
     threads[0]= thread(server_accept_conns, s);
 

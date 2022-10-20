@@ -8,6 +8,7 @@ using namespace std;
 int connect_socket(int port)
 {
    // TO DO
+   return 0;
 }
 
 
@@ -23,6 +24,7 @@ void con2neigh(string list, vector<int>& sockets)
 bool set_state(bool alive, const vector<request>& cl)
 {
 	// TO DO
+    return true;
 }
 
 int run_cell(int port)
@@ -38,8 +40,8 @@ int run_cell(int port)
     srv_socket = connect_socket(htons(port));
 
     /* Crear socket de escucha y permitir aceptar conexiones concurrentemente */
-    int lsn_port = /* TO DO*/ ;
-    acc_sock_fd = /* TO DO*/
+    //int lsn_port = /* TO DO*/ 
+    //acc_sock_fd = /* TO DO*/
     /* TO DO*/
   
     /* Enviar msg al srv con el puerto de escucha */
@@ -87,7 +89,7 @@ int run_cell(int port)
 
     }
     
-    return;
+    return 0;
 }
 
 

@@ -46,7 +46,7 @@ struct client_request{
 };
 
 // Funciones utiles sugeridas
-int read_sock(char str[], int s);
+int read_sock(int s);
 void broadcast(vector<int>& sockets, struct request* req);
 void get_request(struct request* req, int s);
 void send_request(struct request* req, int s);
