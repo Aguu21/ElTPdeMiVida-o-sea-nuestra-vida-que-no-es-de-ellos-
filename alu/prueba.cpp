@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <cstdlib>
-#include <list>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -19,14 +18,15 @@
 #include <thread>
 #include <stdio.h>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/uio.h>
 #include <vector>
 #include <semaphore.h>
 #include <mutex>
 #include <sys/wait.h>
 #include <cassert>
-#include <ctime>
-#include <vector>
+#include <time.h>       /* time */
 #define PORT 5030
 #define MENSAJE_MAXIMO  256
 #define MAX_CLIENTS 10
@@ -34,26 +34,29 @@
 #define CANT_CLIENTS 9
 
 using namespace std;
+#include <thread>
+using namespace std;
 
-// Ejemplo sencillo. 
-// Recordar que es posible definir clases
-// También se pueden definir funciones dentro del struct
-
-struct request{
-	char type[10];
-	char msg[MENSAJE_MAXIMO];
-};
-
-// OPCIONAL
-struct client_request{
-	// TO DO
-};
-
-// Funciones utiles sugeridas
-int read_sock(int s);
-void broadcast(vector<int>& sockets, struct request* req);
-void get_request(struct request* req, int s);
-void send_request(struct request* req, int s);
-int set_acc_socket(int lsn_port);
-void accept_conns(int s, vector<int>& v );
-
+int main(int argc, char* argv[])
+{
+    vector<vector<int>> matriz;
+    int numero = 0;
+    for (size_t i = 0; i < 3 ; i++)
+    {
+        vector<int> value;
+        for (size_t j = 0; j < 3; j++)
+        {
+            value.push_back(j);
+            numero++;
+        }
+        matriz.push_back(value);
+    }
+    for (size_t i = 0; i < 3 ; i++)
+    {
+        for (size_t j = 0; j < 3; j++)
+        {
+            printf("%d", matriz[i][j]);
+        }
+        printf("\n");
+    }
+}

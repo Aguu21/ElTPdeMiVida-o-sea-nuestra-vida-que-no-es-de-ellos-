@@ -6,6 +6,7 @@
 int read_sock(int s) 
 {
     int n;
+    int random=rand()%2;
     char str[MENSAJE_MAXIMO];
     n = recv(s, str, 2*MENSAJE_MAXIMO, 0);
 
@@ -16,8 +17,9 @@ int read_sock(int s)
         exit(1);
     }
     str[n] = '\0';
-    //printf("%d\n",n);
-    printf("recibi: %s\n",str);
+    
+    printf("%d",n);
+    printf("recibi: %s",str);
     return 0;
 }
 

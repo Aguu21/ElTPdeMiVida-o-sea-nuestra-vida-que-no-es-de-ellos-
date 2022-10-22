@@ -14,6 +14,14 @@ void connection_handler(int socket_desc){
     }
 }
 
+void setVecinos(vector<vector<int>> matriz){
+    for (int clienteY = 0; clienteY < matriz[0].size(); clienteY++) {
+        for (int clienteX = 0; clienteX < matriz.size(); clienteX++) {
+            matriz[clienteY][clienteX] = 1;
+        }
+    }
+}
+
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
 void draw()
 {
@@ -25,15 +33,23 @@ void draw()
 
 void timer()
 {
-   /* TO DO*/
+    int delay = 10;
+
+    delay *= CLOCKS_PER_SEC;
+
+    clock_t now = clock();
+
+    while(clock() - now < delay);
+    cout<<"Message Show after delay that you entered"<<endl;
+
 }
 
 
 
 // Thread map_creator: Agrega los nuevos nodos al mapa
-void map_creator(/* TO DO*/)
+void map_creator(vector<vector<int>> matriz)
 {
-  
+    
     /* Registrar los lsn ports de los nuevos */
     /* TIP: Hay que esperar que los clientes manden el mensaje con el lsn port*/
     /* Varias formas de hacerlo, pselect puede resultar comodo para este caso */
@@ -56,9 +72,12 @@ void server_accept_conns(int s)
 {
     int clientes=0;
     int client_len=0;
-    thread threads[5];
+    vector <thread> threads;
     int socketNuevo;
+    list<int> grilla;
     struct sockaddr_in remote;
+    vector<vector<int>> matriz;
+    vector<int> listSocket;
     while(1)
     {
         /* Acpetar nueva celula*/
@@ -69,11 +88,50 @@ void server_accept_conns(int s)
         }
         else{
             clientes++;
-            
+            listSocket.push_back(socketNuevo);
             threads[clientes] = thread(connection_handler, socketNuevo);
             
         }
-        
+        if (clientes == 9){
+            for (size_t i = 0; i < 3 ; i++)
+            {
+                vector<int> value;
+                for (size_t j = 0; j < 3; j++)
+                {
+                    value.push_back(listSocket[clientes]);
+                    clientes++;
+                }
+                matriz.push_back(value);
+            }
+            map_creator(matriz);
+        }
+        else{
+            int variable = 4;
+            vector<vector<int>> matrizHelper;
+            for (size_t i = 0; i < variable-1 ; i++)
+            {
+                vector<int> value;
+                for (size_t j = 0; j < variable; j++)
+                {
+                    if (j==variable-2){
+                        value.push_back(listSocket[i]);
+                    }
+                    else{
+                        value.push_back(matriz[i][j]);
+                    }
+                }
+                matrizHelper.push_back(value);
+            }
+            vector<int> value;
+                for (size_t j = 0; j < variable; j++)
+                {
+                    value.push_back(listSocket[variable+j]);
+                }
+                matrizHelper.push_back(value);
+            variable += 1;
+            map_creator(matriz);
+        }
+
         /* Si ya hay suficientes para armar matriz de 3x3 o para agregar L*/
         /* Actualizar el mapa permitiendo que sigan llegando conexiones */
         /* Sugerencia: Lanzar thread pmap_creator
@@ -125,8 +183,8 @@ int main(int argc, char* argv[])
     /* Levantar servicios y aceptar conexiones */
    /* TO DO*/
     /*
-    Hacer listening
-    Aceptar Clientes
+    *Hacer listening
+   *Aceptar Clientes
 
     Conectar clientes entre si
     Chequear que hay 9 clientes conectados
