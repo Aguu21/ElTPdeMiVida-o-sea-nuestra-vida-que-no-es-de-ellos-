@@ -8,7 +8,14 @@ using namespace std;
 int connect_socket(int port)
 {
    // TO DO
-   return 0;
+   int socket_nuevo;
+   if (socket_nuevo = accept(port, (struct sockaddr *) &remote, ((socklen_t*) &t) == -1){
+       perror("aceptando la conexion");
+       exit(1);
+   }
+   else {
+       return socket_nuevo;
+   }
 }
 
 
@@ -17,6 +24,7 @@ int connect_socket(int port)
 void con2neigh(string list, vector<int>& sockets)
 {
     // TO DO
+    
 }
 
 // Dado el estado actual de la celula y el estado de los vecinos en una ronda
@@ -32,6 +40,8 @@ int run_cell(int port)
     char                buf[MENSAJE_MAXIMO+1];
     struct request      srv_req;
     int                 srv_socket, accepting_socket;
+ 
+    
     // Definir estructuras para manejar los sockets
     // Sugerancia: Diferenciar los canales donde la celula publica su estado
     //             de los que usa para recibir estado de sus vecinos
@@ -39,14 +49,30 @@ int run_cell(int port)
     /* Conectarse al server */
     srv_socket = connect_socket(htons(port));
 
+    if ((int lsn_port =socket(PF_INET, SOCK_STREAM, 0)) == -1){
+        perror("socket");
+        exit(1);
+    }
+
+    if (bind(lsn_port, (struct sockaddr *)&local, sizeof(local))< 0){
+        perror("bind");
+        exit(1);
+    }
+
+    if(listen(lsn_port, 10) == -1){
+        perror("listen");
+        exit(1);
+    }
     /* Crear socket de escucha y permitir aceptar conexiones concurrentemente */
     //int lsn_port = /* TO DO*/ 
     //acc_sock_fd = /* TO DO*/
     /* TO DO*/
-  
+ 
+ 
     /* Enviar msg al srv con el puerto de escucha */
     /* TO DO*/
     
+    send(srv_socket, lsn_port, MENSAJE_MAXIMO);
     /* Obtener lista de vecinos inicial */
     /* TO DO*/
 
@@ -55,7 +81,7 @@ int run_cell(int port)
 
     /* Enviar msg ready para el server */
     /* TO DO*/
-
+    send(srv_socket, "ready?", MENSAJE_MAXIMO);
     /* Comenzar juego */
     srand(getpid());
     char alive = random() % 2;

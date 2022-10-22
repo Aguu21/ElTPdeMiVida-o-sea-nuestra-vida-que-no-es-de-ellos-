@@ -29,6 +29,14 @@ int read_sock(int s)
 void get_request(struct request* req, int s)
 {
    // TO DO  
+    int qer;
+    if (recv(s, (struct request*), 0) == -1){
+        perror("error recibiendo");
+        exit(1);
+    }
+    else{
+        return 0;
+    }
 }
 
 // Dado un vector de enteros que representan socket descriptors y un request,
@@ -36,6 +44,10 @@ void get_request(struct request* req, int s)
 void broadcast(vector<int>& sockets, struct request* req)
 {
     // TO DO    
+    for (int i = 0; i < sockets.size(); i++)
+    {
+        send(sockets[i], struct request, 0)
+    }
 }
 
 // Por siempre, acepta conexiones sobre un socket s en estado listen y 
@@ -61,7 +73,16 @@ void accept_conns(int s, vector<int>& v)
 int set_acc_socket(int lsn_port)
 {
     // TO DO  
-    return 0;
+   
+    if(bind(lsn_port, (struct sockaddr *)&local, sizeof(local))<0){
+        perror("bind");
+        exit(1);
+    }
+    if(listen(lsn_port, 10) == -1){
+        perror("listen");
+        exit(1);
+    }
+    return lsn_port;
 }
 
 // Setea un socket al modo nobloqueante
