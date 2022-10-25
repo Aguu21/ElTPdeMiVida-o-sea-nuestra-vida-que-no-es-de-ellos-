@@ -70,8 +70,8 @@ void map_creator(vector<vector<int>> matriz)
 
 void server_accept_conns(int s)
 {
-    int clientes=0;
-    int client_len=0;
+    int clientes = 0;
+    int client_len = 0;
     vector <thread> threads;
     int socketNuevo;
     list<int> grilla;
@@ -87,50 +87,50 @@ void server_accept_conns(int s)
             exit(-1);
         }
         else{
+            threads.push_back(thread(connection_handler, socketNuevo));
+            //listSocket.push_back(socketNuevo);
+            //threads[clientes] = thread(connection_handler, socketNuevo);
             clientes++;
-            listSocket.push_back(socketNuevo);
-            threads[clientes] = thread(connection_handler, socketNuevo);
-            
         }
-        if (clientes == 9){
-            for (size_t i = 0; i < 3 ; i++)
-            {
-                vector<int> value;
-                for (size_t j = 0; j < 3; j++)
-                {
-                    value.push_back(listSocket[clientes]);
-                    clientes++;
-                }
-                matriz.push_back(value);
-            }
-            map_creator(matriz);
-        }
-        else{
-            int variable = 4;
-            vector<vector<int>> matrizHelper;
-            for (size_t i = 0; i < variable-1 ; i++)
-            {
-                vector<int> value;
-                for (size_t j = 0; j < variable; j++)
-                {
-                    if (j==variable-2){
-                        value.push_back(listSocket[i]);
-                    }
-                    else{
-                        value.push_back(matriz[i][j]);
-                    }
-                }
-                matrizHelper.push_back(value);
-            }
-            vector<int> value;
-                for (size_t j = 0; j < variable; j++)
-                {
-                    value.push_back(listSocket[variable+j]);
-                }
-                matrizHelper.push_back(value);
-            variable += 1;
-            map_creator(matriz);
-        }
+        //if (clientes == 9){
+        //    for (size_t i = 0; i < 3 ; i++)
+        //    {
+        //        vector<int> value;
+        //        for (size_t j = 0; j < 3; j++)
+        //        {
+        //            value.push_back(listSocket[clientes]);
+        //            clientes++;
+        //        }
+        //        matriz.push_back(value);
+        //    }
+        //    map_creator(matriz);
+        //}
+        //else{
+        //    int variable = 4;
+        //    vector<vector<int>> matrizHelper;
+        //    for (size_t i = 0; i < variable-1 ; i++)
+        //    {
+        //        vector<int> value;
+        //        for (size_t j = 0; j < variable; j++)
+        //        {
+        //            if (j==variable-2){
+        //                value.push_back(listSocket[i]);
+        //            }
+        //            else{
+        //                value.push_back(matriz[i][j]);
+        //            }
+        //        }
+        //        matrizHelper.push_back(value);
+        //    }
+        //    vector<int> value;
+        //        for (size_t j = 0; j < variable; j++)
+        //        {
+        //            value.push_back(listSocket[variable+j]);
+        //        }
+        //        matrizHelper.push_back(value);
+        //    variable += 1;
+        //    map_creator(matriz);
+        //}
 
         /* Si ya hay suficientes para armar matriz de 3x3 o para agregar L*/
         /* Actualizar el mapa permitiendo que sigan llegando conexiones */

@@ -29,14 +29,12 @@ int read_sock(int s)
 void get_request(struct request* req, int s)
 {
    // TO DO  
-    int qer;
-    if (recv(s, (struct request*), 0) == -1){
+    
+    if (recv(s, (struct request*) req,MENSAJE_MAXIMO, 0) == -1){
         perror("error recibiendo");
         exit(1);
     }
-    else{
-        return 0;
-    }
+    
 }
 
 // Dado un vector de enteros que representan socket descriptors y un request,
@@ -46,7 +44,7 @@ void broadcast(vector<int>& sockets, struct request* req)
     // TO DO    
     for (int i = 0; i < sockets.size(); i++)
     {
-        send(sockets[i], struct request, 0)
+        send(sockets[i], (struct request*) req, MENSAJE_MAXIMO,0);
     }
 }
 
@@ -73,7 +71,8 @@ void accept_conns(int s, vector<int>& v)
 int set_acc_socket(int lsn_port)
 {
     // TO DO  
-   
+    struct sockaddr_in local;
+
     if(bind(lsn_port, (struct sockaddr *)&local, sizeof(local))<0){
         perror("bind");
         exit(1);

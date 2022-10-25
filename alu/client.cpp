@@ -8,8 +8,9 @@ using namespace std;
 int connect_socket(int port)
 {
    // TO DO
+   struct sockaddr_in remote;
    int socket_nuevo;
-   if (socket_nuevo = accept(port, (struct sockaddr *) &remote, ((socklen_t*) &t) == -1){
+   if (socket_nuevo = connect(port, (struct sockaddr *) &remote, sizeof(remote)) == -1){
        perror("aceptando la conexion");
        exit(1);
    }
@@ -40,7 +41,7 @@ int run_cell(int port)
     char                buf[MENSAJE_MAXIMO+1];
     struct request      srv_req;
     int                 srv_socket, accepting_socket;
- 
+    struct sockaddr_in local;
     
     // Definir estructuras para manejar los sockets
     // Sugerancia: Diferenciar los canales donde la celula publica su estado
@@ -48,8 +49,13 @@ int run_cell(int port)
   
     /* Conectarse al server */
     srv_socket = connect_socket(htons(port));
-
-    if ((int lsn_port =socket(PF_INET, SOCK_STREAM, 0)) == -1){
+    
+    /* Crear socket de escucha y permitir aceptar conexiones concurrentemente */
+    //int lsn_port = /* TO DO*/ 
+    //acc_sock_fd = /* TO DO*/
+    /* TO DO*/
+    int lsn_port;
+    if ((lsn_port = socket(PF_INET, SOCK_STREAM, 0)) == -1){
         perror("socket");
         exit(1);
     }
@@ -63,16 +69,16 @@ int run_cell(int port)
         perror("listen");
         exit(1);
     }
-    /* Crear socket de escucha y permitir aceptar conexiones concurrentemente */
-    //int lsn_port = /* TO DO*/ 
-    //acc_sock_fd = /* TO DO*/
-    /* TO DO*/
- 
  
     /* Enviar msg al srv con el puerto de escucha */
     /* TO DO*/
     
-    send(srv_socket, lsn_port, MENSAJE_MAXIMO);
+    struct request req;
+    string listen(std::to_string(lsn_port));
+    strncpy(req.type,"TYPE\0",5);
+    strncpy(req.msg, listen.c_str(), 5);
+   
+    send(srv_socket,  req.msg, MENSAJE_MAXIMO, 0);
     /* Obtener lista de vecinos inicial */
     /* TO DO*/
 
@@ -81,7 +87,7 @@ int run_cell(int port)
 
     /* Enviar msg ready para el server */
     /* TO DO*/
-    send(srv_socket, "ready?", MENSAJE_MAXIMO);
+    send(srv_socket, "ready?", MENSAJE_MAXIMO, 0);
     /* Comenzar juego */
     srand(getpid());
     char alive = random() % 2;
@@ -144,7 +150,6 @@ int main(int argc, char* argv[]){
         perror("conectandose");
         exit(1);
     }
-
     do{
         printf("> ");
         fgets(buf, MENSAJE_MAXIMO, stdin);
@@ -157,13 +162,14 @@ int main(int argc, char* argv[]){
     }while(!feof(stdin));
 
     /* Cerrar el socket. */
+    
     close(socket_fd);
 
 
     /* Lanzar tantos procesos celulas como los indicados por argv[1]*/
     /* TO DO*/
     /*
-    Se conectan al servidor
+    Se conectan al servidor 
     
     Les llega del servidor sus vecinos
     Hacen conexiones con ellos
