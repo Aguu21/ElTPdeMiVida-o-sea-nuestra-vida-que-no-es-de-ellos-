@@ -52,8 +52,8 @@ struct client_request{
 // Funciones utiles sugeridas
 int read_sock(int s);
 void broadcast(vector<int>& sockets, struct request* req);
-void get_request(struct request* req, int s);
-void send_request(struct request* req, int s);
+void get_request(struct request req, int s);
+void send_request(struct request req, int s);
 int set_acc_socket(int lsn_port);
 void accept_conns(int s, vector<int>& v );
 

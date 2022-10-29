@@ -7,7 +7,6 @@ using namespace std;
 // con el destino retornando un socket en estado conectado en caso de exito
 int connect_socket(int port)
 {
-   // TO DO
    struct sockaddr_in remote;
    int socket_nuevo;
    if (socket_nuevo = connect(port, (struct sockaddr *) &remote, sizeof(remote)) == -1){
@@ -25,7 +24,6 @@ int connect_socket(int port)
 void con2neigh(string list, vector<int>& sockets)
 {
     // TO DO
-    
 }
 
 // Dado el estado actual de la celula y el estado de los vecinos en una ronda
@@ -41,44 +39,22 @@ int run_cell(int port)
     char                buf[MENSAJE_MAXIMO+1];
     struct request      srv_req;
     int                 srv_socket, accepting_socket;
-    struct sockaddr_in local;
-    
     // Definir estructuras para manejar los sockets
     // Sugerancia: Diferenciar los canales donde la celula publica su estado
     //             de los que usa para recibir estado de sus vecinos
   
     /* Conectarse al server */
     srv_socket = connect_socket(htons(port));
-    
+
     /* Crear socket de escucha y permitir aceptar conexiones concurrentemente */
-    //int lsn_port = /* TO DO*/ 
-    //acc_sock_fd = /* TO DO*/
+
+    int lsn_port = 0/* TO DO*/ ;
+    int acc_sock_fd = 0;/* TO DO*/
     /* TO DO*/
-    int lsn_port;
-    if ((lsn_port = socket(PF_INET, SOCK_STREAM, 0)) == -1){
-        perror("socket");
-        exit(1);
-    }
-
-    if (bind(lsn_port, (struct sockaddr *)&local, sizeof(local))< 0){
-        perror("bind");
-        exit(1);
-    }
-
-    if(listen(lsn_port, 10) == -1){
-        perror("listen");
-        exit(1);
-    }
- 
+  
     /* Enviar msg al srv con el puerto de escucha */
     /* TO DO*/
     
-    struct request req;
-    string listen(std::to_string(lsn_port));
-    strncpy(req.type,"TYPE\0",5);
-    strncpy(req.msg, listen.c_str(), 5);
-   
-    send(srv_socket,  req.msg, MENSAJE_MAXIMO, 0);
     /* Obtener lista de vecinos inicial */
     /* TO DO*/
 
@@ -87,14 +63,14 @@ int run_cell(int port)
 
     /* Enviar msg ready para el server */
     /* TO DO*/
-    send(srv_socket, "ready?", MENSAJE_MAXIMO, 0);
+
     /* Comenzar juego */
     srand(getpid());
     char alive = random() % 2;
     while(1)
     {
         // Esperar request del srv
-        get_request(&srv_req, srv_socket);
+        get_request(srv_req, srv_socket);
         if (strncmp(srv_req.type,"TICK",4) == 0)
         {
             /* Publicar estado*/
@@ -124,16 +100,39 @@ int run_cell(int port)
     return 0;
 }
 
+void client_accept_conns(int s)
+{
+    int client_len = 0;
+    int socketNuevo;
+    struct sockaddr_in remote;
+
+    while(1)
+    {
+        /* Acpetar nueva celula*/
+        client_len = sizeof(remote);
+        if((socketNuevo = accept(s, (struct sockaddr *) &remote, (socklen_t*) &client_len)) < 0){
+            perror("Error aceptando");
+            exit(-1);
+        }
+    }
+}
 
 int main(int argc, char* argv[]){
     int pid;
     int socket_fd;
     int len;
+    struct request req;
+    struct request riq;
     struct sockaddr_in  remote;
+    struct sockaddr_in local;
     struct hostent *hp;
     struct in_addr addr;
     char buf[MENSAJE_MAXIMO];
-
+    thread threads[2];
+    int s;
+    int s_listen;
+    
+    /* crea socket */
     if ((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
         perror("creando socket");
         exit(1);
@@ -145,39 +144,51 @@ int main(int argc, char* argv[]){
     inet_pton(AF_INET, "127.0.0.1", &(remote.sin_addr));
 
     /* Conectarse. */
-    int s = connect(socket_fd, (struct sockaddr *)&remote, sizeof(remote));
-    if ( s == -1) {
+    if ((s = connect(socket_fd, (struct sockaddr *)&remote, sizeof(remote))) == -1) {
         perror("conectandose");
         exit(1);
     }
-    do{
-        printf("> ");
-        fgets(buf, MENSAJE_MAXIMO, stdin);
-        int s = send(socket_fd, buf, strlen(buf), 0);
-        if (s == -1) {
-            perror("enviando");
-            exit(1);
-        }
 
-    }while(!feof(stdin));
-
-    /* Cerrar el socket. */
+    /* crea socket listen */
+    if ((s_listen = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }
     
+    /* configura dirección para el listen */
+    local.sin_family = AF_INET;
+    local.sin_port = htons(1024 + random());
+    local.sin_addr.s_addr = INADDR_ANY;
+
+
+    /* linkea socket con listen con dirección */
+    if (bind(s_listen, (struct sockaddr *)&local, sizeof(local)) < 0) {
+        perror("bind");
+        exit(1);
+    }
+
+    /* setea socket a modo "listen"*/
+    if (listen(s_listen, 10) == -1) {
+        perror("listen");
+        exit(1);
+    }
+
+    threads[0] = thread(client_accept_conns, s_listen);
+
+    string puerto = std::to_string(s_listen);
+    
+    strncpy(req.type, "PORT\0", 10);
+    strncpy(req.msg, puerto.c_str(), MENSAJE_MAXIMO);
+    
+    send_request(req, socket_fd);
+    
+    get_request(riq, socket_fd);
+    
+    threads[0].join();
+    close(s_listen);
     close(socket_fd);
-
-
+    return 0;
     /* Lanzar tantos procesos celulas como los indicados por argv[1]*/
     /* TO DO*/
-    /*
-    Se conectan al servidor 
-    
-    Les llega del servidor sus vecinos
-    Hacen conexiones con ellos
-    Avisan que estan listas
-    Comienza el juego
-    Actualizan su estado
-    Se lo comunican al servidor
-    Avisan que terminaron
-    */
     
 }
