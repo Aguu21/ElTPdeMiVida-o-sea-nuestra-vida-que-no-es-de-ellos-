@@ -27,6 +27,8 @@
 #include <cassert>
 #include <ctime>
 #include <vector>
+#include <bits/stdc++.h>
+
 #define PORT 5030
 #define MENSAJE_MAXIMO  256
 #define MAX_CLIENTS 10

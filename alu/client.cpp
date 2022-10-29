@@ -154,10 +154,12 @@ int main(int argc, char* argv[]){
         perror("socket");
         exit(1);
     }
-    
+
     /* configura dirección para el listen */
+    srand(time(0));
+    int port = 1025 + rand();
     local.sin_family = AF_INET;
-    local.sin_port = htons(1024 + random());
+    local.sin_port = htons(port);
     local.sin_addr.s_addr = INADDR_ANY;
 
 
@@ -175,13 +177,25 @@ int main(int argc, char* argv[]){
 
     threads[0] = thread(client_accept_conns, s_listen);
 
-    string puerto = std::to_string(s_listen);
+    string puerto = std::to_string(local.sin_port);
+    
+    // Apenas se conecta, tiene que mandar su puerto y su socket en listen
+    // El servidor tiene que alamacenar esa informacion
+    // El servidor tiene que alamacenar un listo por cada cliente
+    // Una vez listos les manda a cada uno a donde conectarse
+    // Cada cliente se conecta
     
     strncpy(req.type, "PORT\0", 10);
     strncpy(req.msg, puerto.c_str(), MENSAJE_MAXIMO);
     
     send_request(req, socket_fd);
     
+    strncpy(req.type, "S_Listen\0", 10);
+    string soc_listen = std::to_string(s_listen);
+    strncpy(req.msg, soc_listen.c_str(), MENSAJE_MAXIMO);
+    
+    send_request(req, socket_fd);
+
     get_request(riq, socket_fd);
     
     threads[0].join();
