@@ -4,13 +4,142 @@ using namespace std;
 // Sugerencia: El servidor va a necestiar varios threads. Recordar que peuden
 // compartir variables y que por lo tanto las herramientas de sincronziacion
 // como semaforos son perfectamente validas.
-
-void connection_handler(int socket_desc){
+int po = 0;
+void conectar_Vecinos(vector<vector<vector<int>>> matriz, int matriz_size){
+    vector<int> vecinos;
+    string vecinos_str;
+    int help = 2;
+    for (int y = 0; y < matriz_size ; y++)
+    {
+        for (int x = 0; x < matriz_size; x++)
+        {
+            if (y==0 && x==0){
+                vecinos.push_back(matriz[0][1][help]);
+                vecinos.push_back(matriz[0][1][help]);
+                vecinos.push_back(matriz[0][1][help]);
+            }
+            else if((y==0 && x==matriz_size)){
+                vecinos.push_back(matriz[0][matriz_size-2][help]);
+                vecinos.push_back(matriz[1][matriz_size-1][help]);
+                vecinos.push_back(matriz[1][matriz_size-2][help]);                
+            }
+            else if((y==matriz_size && x==0)){
+                vecinos.push_back(matriz[matriz_size-2][0][help]);
+                vecinos.push_back(matriz[matriz_size-2][1][help]);
+                vecinos.push_back(matriz[matriz_size-1][1][help]);
+            }
+            else if((y==matriz_size && x==matriz_size)){
+                vecinos.push_back(matriz[matriz_size-1][matriz_size-2][help]);
+                vecinos.push_back(matriz[matriz_size-2][matriz_size-2][help]);
+                vecinos.push_back(matriz[matriz_size-2][matriz_size-1][help]);
+            }
+            else if((y==0 && x!=0 && x!=matriz_size-1)){
+                vecinos.push_back(matriz[0][x-1][help]);
+                vecinos.push_back(matriz[0][x+1][help]);
+                vecinos.push_back(matriz[1][x-1][help]);
+                vecinos.push_back(matriz[1][x+1][help]);
+                vecinos.push_back(matriz[1][x][help]);
+            }
+            else if((y==matriz_size-1 && x!=0 && x!=matriz_size-1)){
+                vecinos.push_back(matriz[matriz_size-1][x-1][help]);
+                vecinos.push_back(matriz[matriz_size-1][x+1][help]);
+                vecinos.push_back(matriz[matriz_size-2][x-1][help]);
+                vecinos.push_back(matriz[matriz_size-2][x+1][help]);
+                vecinos.push_back(matriz[matriz_size-2][x][help]);
+            }
+            else if((x==0 && y!=0 && y!=matriz_size-1)){
+                vecinos.push_back(matriz[y-1][x][help]);
+                vecinos.push_back(matriz[y+1][x][help]);
+                vecinos.push_back(matriz[y-1][x+1][help]);
+                vecinos.push_back(matriz[y+1][x+1][help]);
+                vecinos.push_back(matriz[y][x+1][help]);
+            }
+            else if((x==matriz_size-1 && y!=0 && y!=matriz_size-1)){
+                vecinos.push_back(matriz[y-1][x][help]);
+                vecinos.push_back(matriz[y+1][x][help]);
+                vecinos.push_back(matriz[y-1][x-1][help]);
+                vecinos.push_back(matriz[y+1][x-1][help]);
+                vecinos.push_back(matriz[y][x-1][help]);
+            }
+            else{
+                vecinos.push_back(matriz[y-1][x-1][help]);
+                vecinos.push_back(matriz[y-1][x+1][help]);
+                vecinos.push_back(matriz[y-1][x][help]);
+                vecinos.push_back(matriz[y+1][x+1][help]);
+                vecinos.push_back(matriz[y+1][x-1][help]);
+                vecinos.push_back(matriz[y+1][x][help]);
+                vecinos.push_back(matriz[y][x+1][help]);
+                vecinos.push_back(matriz[y][x-1][help]);
+            }
+            
+            //Pasarselo al cliente
+            for (int i = 0; i < vecinos.size(); i++)
+            {
+                request req;
+                vecinos_str += to_string(vecinos[i]);
+                vecinos_str += " ";
+                strncpy(req.type, "VECINOS", 8);
+                strncpy(req.msg, vecinos_str.c_str(), MENSAJE_MAXIMO);
+                send_request(req, matriz[y][x][1]);
+                sleep(2);
+            }            
+            
+        }
+    }
+}
+void connection_handler(int socket_desc,vector<vector<int>> &listaPorts, vector<vector<int>> &listaListen){
+    struct request riq;
     while(1)
     {
-        if(read_sock(socket_desc)==(-1)){
-            break;
+        int n;
+        
+        vector<int> helper;
+        int z;
+
+        n = recv(socket_desc, &riq, 2*MENSAJE_MAXIMO, 0);
+
+        string temp(riq.type);
+
+        if (temp == "PORT"){
+            
+            helper.push_back(socket_desc);
+            string hola = riq.msg;
+            int port = std::stoi(hola);
+            helper.push_back(port);
+            listaPorts.push_back(helper);
+            
+            
+            cout << "Servidor Recibi: ";
+            cout << riq.type;
+            cout << " ";
+            cout << riq.msg << endl;
+            
         }
+        else if (temp == "S_Listen"){
+            
+                helper.push_back(socket_desc);
+                string hola = riq.msg;
+                int port = std::stoi(hola);
+                helper.push_back(port);
+                cout << "Servidor Recibi: ";
+                cout << riq.type;
+                cout << " ";
+                cout << riq.msg << endl;
+                listaListen.push_back(helper);
+                
+        }
+        
+        if (listaPorts.size() == 9 && listaListen.size() == 9){
+            
+            if (po == 0){
+                po++;
+                struct request riq;
+                vector<vector<vector<int>>> matriz = crearMatriz(listaPorts, listaListen);
+                conectar_Vecinos(matriz, 3);
+                
+            }
+        }
+        
     }
 }
 
@@ -60,6 +189,8 @@ void server_accept_conns(int s)
     vector <thread> threads;
     int socketNuevo;
     list<int> grilla;
+    vector<vector<int>> listaPorts;
+    vector<vector<int>> listaListen;
     struct sockaddr_in remote;
     struct request req;
     int z=0;
@@ -72,14 +203,8 @@ void server_accept_conns(int s)
             exit(-1);
         }
         else{
-            threads.push_back(thread(connection_handler, socketNuevo));
+            threads.push_back(thread(connection_handler, socketNuevo, ref(listaPorts), ref(listaListen)));
             
-            string anda = "anda";
-            strncpy(req.type, "Ayuda\0", 10);
-            strncpy(req.msg, anda.c_str(), MENSAJE_MAXIMO);
-    
-            send_request(req, socketNuevo);
-
         }
         
         /* Si ya hay suficientes para armar matriz de 3x3 o para agregar L*/
@@ -95,85 +220,6 @@ void server_accept_conns(int s)
     close(s);
 }
 
-void conectar_Vecinos(vector<vector<int>> matriz, int matriz_size, int lsn_port){
-    vector<int> vecinos;
-    request req;
-    string vecinos_str;
-    for (int y = 0; y < matriz_size ; y++)
-    {
-        for (int x = 0; x < matriz_size; x++)
-        {
-            if (y==0 && x==0){
-                vecinos.push_back(matriz[0][1]);
-                vecinos.push_back(matriz[1][0]);
-                vecinos.push_back(matriz[1][1]);
-            }
-            else if((y==0 && x==matriz_size)){
-                vecinos.push_back(matriz[0][matriz_size-2]);
-                vecinos.push_back(matriz[1][matriz_size-1]);
-                vecinos.push_back(matriz[1][matriz_size-2]);                
-            }
-            else if((y==matriz_size && x==0)){
-                vecinos.push_back(matriz[matriz_size-2][0]);
-                vecinos.push_back(matriz[matriz_size-2][1]);
-                vecinos.push_back(matriz[matriz_size-1][1]);
-            }
-            else if((y==matriz_size && x==matriz_size)){
-                vecinos.push_back(matriz[matriz_size-1][matriz_size-2]);
-                vecinos.push_back(matriz[matriz_size-2][matriz_size-2]);
-                vecinos.push_back(matriz[matriz_size-2][matriz_size-1]);
-            }
-            else if((y==0 && x!=0 && x!=matriz_size-1)){
-                vecinos.push_back(matriz[0][x-1]);
-                vecinos.push_back(matriz[0][x+1]);
-                vecinos.push_back(matriz[1][x-1]);
-                vecinos.push_back(matriz[1][x+1]);
-                vecinos.push_back(matriz[1][x]);
-            }
-            else if((y==matriz_size-1 && x!=0 && x!=matriz_size-1)){
-                vecinos.push_back(matriz[matriz_size-1][x-1]);
-                vecinos.push_back(matriz[matriz_size-1][x+1]);
-                vecinos.push_back(matriz[matriz_size-2][x-1]);
-                vecinos.push_back(matriz[matriz_size-2][x+1]);
-                vecinos.push_back(matriz[matriz_size-2][x]);
-            }
-            else if((x==0 && y!=0 && y!=matriz_size-1)){
-                vecinos.push_back(matriz[y-1][x]);
-                vecinos.push_back(matriz[y+1][x]);
-                vecinos.push_back(matriz[y-1][x+1]);
-                vecinos.push_back(matriz[y+1][x+1]);
-                vecinos.push_back(matriz[y][x+1]);
-            }
-            else if((x==matriz_size-1 && y!=0 && y!=matriz_size-1)){
-                vecinos.push_back(matriz[y-1][x]);
-                vecinos.push_back(matriz[y+1][x]);
-                vecinos.push_back(matriz[y-1][x-1]);
-                vecinos.push_back(matriz[y+1][x-1]);
-                vecinos.push_back(matriz[y][x-1]);
-            }
-            else{
-                vecinos.push_back(matriz[y-1][x-1]);
-                vecinos.push_back(matriz[y-1][x+1]);
-                vecinos.push_back(matriz[y-1][x]);
-                vecinos.push_back(matriz[y+1][x+1]);
-                vecinos.push_back(matriz[y+1][x-1]);
-                vecinos.push_back(matriz[y+1][x]);
-                vecinos.push_back(matriz[y][x+1]);
-                vecinos.push_back(matriz[y][x-1]);
-            }
-            
-            //Pasarselo al cliente
-            for (int i = 0; i < vecinos.size(); i++)
-            {
-                vecinos_str += to_string(vecinos[i]);
-                vecinos_str += " ";
-            }            
-            //strncpy(req.type, "VECINOS", 8);
-            //strncpy(req.msg, vecinos_str.c_str(), MENSAJE_MAXIMO);
-            //send_request(req, matriz[y][x]);
-        }
-    }
-}
 
 int main(int argc, char* argv[])
 {

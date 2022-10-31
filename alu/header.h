@@ -58,4 +58,4 @@ void get_request(struct request req, int s);
 void send_request(struct request req, int s);
 int set_acc_socket(int lsn_port);
 void accept_conns(int s, vector<int>& v );
-
+vector<vector<vector<int>>> crearMatriz(vector<vector<int>> &listaPorts, vector<vector<int>> &listaListen);

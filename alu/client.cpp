@@ -14,6 +14,7 @@ int connect_socket(int port)
        exit(1);
    }
    else {
+        cout << "me meti a alguien"<< endl;
        return socket_nuevo;
    }
 }
@@ -121,13 +122,12 @@ int main(int argc, char* argv[]){
     int pid;
     int socket_fd;
     int len;
-    struct request req;
-    struct request riq;
     struct sockaddr_in  remote;
     struct sockaddr_in local;
     struct hostent *hp;
     struct in_addr addr;
     char buf[MENSAJE_MAXIMO];
+    list<int> sock;
     thread threads[2];
     int s;
     int s_listen;
@@ -177,26 +177,47 @@ int main(int argc, char* argv[]){
 
     threads[0] = thread(client_accept_conns, s_listen);
 
-    string puerto = std::to_string(local.sin_port);
+    
     
     // Apenas se conecta, tiene que mandar su puerto y su socket en listen
     // El servidor tiene que alamacenar esa informacion
     // El servidor tiene que alamacenar un listo por cada cliente
     // Una vez listos les manda a cada uno a donde conectarse
     // Cada cliente se conecta
-    
+    struct request req;
+    string puerto = std::to_string(local.sin_port);
     strncpy(req.type, "PORT\0", 10);
     strncpy(req.msg, puerto.c_str(), MENSAJE_MAXIMO);
     
     send_request(req, socket_fd);
     
-    strncpy(req.type, "S_Listen\0", 10);
-    string soc_listen = std::to_string(s_listen);
-    strncpy(req.msg, soc_listen.c_str(), MENSAJE_MAXIMO);
-    
-    send_request(req, socket_fd);
 
-    get_request(riq, socket_fd);
+    sleep(3);
+    struct request riq;
+    string soc_listen = std::to_string(s_listen);
+    strncpy(riq.type, "S_Listen\0", 10);
+    
+    strncpy(riq.msg, soc_listen.c_str(), MENSAJE_MAXIMO);
+    
+    send_request(riq, socket_fd);
+
+    while(1) {
+        struct request roq;
+        int n;
+        n = recv(socket_fd, &roq, 2*MENSAJE_MAXIMO, 0);
+
+        string temp(roq.type);
+
+        if (temp == "VECINOS"){
+            string hola = roq.msg;
+            int port = std::stoi(hola);
+            cout << "Cliente Recibi: ";
+            cout << roq.type;
+            cout << " ";
+            cout << roq.msg << endl;
+            
+        }
+    }
     
     threads[0].join();
     close(s_listen);

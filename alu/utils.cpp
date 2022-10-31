@@ -1,132 +1,57 @@
 #include "header.h"
 
-// Un regalito, puede que quieran modificarla
-// Dado un arreglo de char str y un socket descriptor s, hace una lectura
-// bloqueante sobre s y llena el buffer str con los bytes leídos.
-int read_sock(int s) 
+
+vector<vector<vector<int>>> crearMatriz(vector<vector<int>> &listaPorts, vector<vector<int>> &listaListen)
 {
-    int n;
-    struct request riq;
-    vector<vector<int>> listaPorts;
-    vector<vector<int>> listaListen;
+    int ayuda = 0;
+    int equiz = 0;
+    int equis = 0;
+    vector<int> listaHelper;
+    vector<vector<int>> listalistahelper;
     vector<vector<vector<int>>> matriz;
-    vector<int> listSocket;
-    vector<int> helper;
-    int z;
+    
+    //Ordenar las listas para juntar puertos con socketListen con Socket de conexion.
+    
+    
 
-    n = recv(s, &riq, 2*MENSAJE_MAXIMO, 0);
-
-    string temp(riq.type);
-    string msg = riq.msg;
-    if (n == 0) 
-        return -1;
-    if (n < 0) { 
-        perror("recibiendo");
-        exit(1);
-    }
-    if (msg == "PORT"){
-        helper.push_back(s);
-        string hola = riq.msg;
-        int port = std::stoi(hola);
-        helper.push_back(port);
-        cout << "Servidor Recibi: ";
-        cout << riq.type;
-        cout << " ";
-        cout << riq.msg << endl;
-        listaPorts.push_back(helper);
-    }
-    else if (msg == "S_Listen"){
-        helper.push_back(s);
-        string hola = riq.msg;
-        int port = std::stoi(hola);
-        helper.push_back(port);
-        cout << "Servidor Recibi: ";
-        cout << riq.type;
-        cout << " ";
-        cout << riq.msg << endl;
-        listaListen.push_back(helper);
+    for (int y = 0; y < 3 ; y++)
+    {
+        vector<vector<int>> value;
+        for (int x = 0; x < 3; x++)
+        {
+            vector<int> value2;
+            for(int z=0;z<3;z++){
+                value2.push_back(0);
+            }
+            value.push_back(value2);
+        }
+        matriz.push_back(value);
     }
     
-    if (listaPorts.size() == 9 && listaListen.size() == 9){
-        int ayuda;
-        vector<int> listaHelper;
-        vector<vector<int>> listalistahelper;
-        //Ordenar las listas para juntar puertos con socketListen con Socket de conexion.
-        
-        for(int i; i<9; i++){
-            listaHelper.push_back(listaPorts[i][0]);
-        }
-        
-        sort(listaHelper.begin(), listaHelper.end());
+    for (int y = 0; y < 3 ; y++)
+    {
 
-        for(int i; i<9; i++){
-            listalistahelper[i][0]=listaHelper[i];
-            for(int j; j<9;i++){
-                if (listaHelper[i] ==listaPorts[j][1]){
-                    listalistahelper[i][1]=listaPorts[j][1];
-                }
-            }
-        }
-
-        listaPorts=listalistahelper;
-
-        vector<int> listaHelper;
-        vector<vector<int>> listalistahelper;
-
-        for(int i; i<9; i++){
-            listaHelper.push_back(listaListen[i][0]);
-        }
-        
-        sort(listaHelper.begin(), listaHelper.end());
-
-        for(int i; i<9; i++){
-            listalistahelper[i][0]=listaHelper[i];
-            for(int j; j<9;i++){
-                if (listaHelper[i] ==listaListen[j][1]){
-                    listalistahelper[i][1]=listaListen[j][1];
-                }
-            }
-        }
-
-        listaListen=listalistahelper;
-
-        for (int y = 0; y < 3 ; y++)
+        for (int x = 0; x < 3; x++)
         {
-            vector<vector<int>> value;
-            for (int x = 0; x < 3; x++)
-            {
-                vector<int> value2;
-                for(int z=0;z<3;z++){
-                    value2.push_back(0);
+            for (int z=0;z<3;z++){
+                if(z==0){
+                    matriz[y][x][z]=listaListen[equiz][0];
+                    equiz++;
                 }
-                value.push_back(value2);
+                else if(z==1){
+                    matriz[y][x][z]=listaListen[equis][1];
+                    equis++;
+                }
+                else{
+
+                    matriz[y][x][z]=listaPorts[ayuda][1];
+                    ayuda++;
+                }
+
             }
-            matriz.push_back(value);
-        }
-
-        for (int y = 0; y < 3 ; y++)
-        {
-            for (int x = 0; x < 3; x++)
-            {
-                for (int z=0;z<3;z++){
-                    if(z==0){
-                        matriz[y][x][z]=listaListen[x][0];
-                    }
-                    else if(z==1){
-                        matriz[y][x][z]=listaListen[x][1];
-                    }
-                    else{
-                        matriz[y][x][z]=listaPorts[x][1];
-                    }
-
-                }
-            }    
-        }
-
-            //map_creator(/*matriz*/);
+        }    
     }
-
-    return 0;
+    return matriz;
 }
 
 
