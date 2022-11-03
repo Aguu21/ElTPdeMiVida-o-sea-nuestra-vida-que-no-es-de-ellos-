@@ -4,142 +4,85 @@ using namespace std;
 // Sugerencia: El servidor va a necestiar varios threads. Recordar que peuden
 // compartir variables y que por lo tanto las herramientas de sincronziacion
 // como semaforos son perfectamente validas.
-int po = 0;
-void conectar_Vecinos(vector<vector<vector<int>>> matriz, int matriz_size){
-    vector<int> vecinos;
-    string vecinos_str;
-    int help = 2;
-    for (int y = 0; y < matriz_size ; y++)
+void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matrizSocket){
+    int matriz_size = matrizSocket.size();
+    for (int y = 0; y < matrizSocket.size() ; y++)
     {
-        for (int x = 0; x < matriz_size; x++)
+        for (int x = 0; x < matrizSocket.size(); x++)
         {
+            vector<int> vecinos;
+            string vecinos_str;
             if (y==0 && x==0){
-                vecinos.push_back(matriz[0][1][help]);
-                vecinos.push_back(matriz[0][1][help]);
-                vecinos.push_back(matriz[0][1][help]);
+                vecinos.push_back(matrizPorts[y][x+1]);
+                vecinos.push_back(matrizPorts[y+1][x+1]);
+                vecinos.push_back(matrizPorts[y+1][x]);
             }
-            else if((y==0 && x==matriz_size)){
-                vecinos.push_back(matriz[0][matriz_size-2][help]);
-                vecinos.push_back(matriz[1][matriz_size-1][help]);
-                vecinos.push_back(matriz[1][matriz_size-2][help]);                
+            else if((y==0 && x==matriz_size-1)){
+                vecinos.push_back(matrizPorts[y][matriz_size-2] );
+                vecinos.push_back(matrizPorts[y+1][matriz_size-1] );
+                vecinos.push_back(matrizPorts[y+1][matriz_size-2] );                
             }
-            else if((y==matriz_size && x==0)){
-                vecinos.push_back(matriz[matriz_size-2][0][help]);
-                vecinos.push_back(matriz[matriz_size-2][1][help]);
-                vecinos.push_back(matriz[matriz_size-1][1][help]);
+            else if((y==matriz_size-1 && x==0)){
+                vecinos.push_back(matrizPorts[matriz_size-2][x] );
+                vecinos.push_back(matrizPorts[matriz_size-2][x+1] );
+                vecinos.push_back(matrizPorts[matriz_size-1][x+1] );
             }
-            else if((y==matriz_size && x==matriz_size)){
-                vecinos.push_back(matriz[matriz_size-1][matriz_size-2][help]);
-                vecinos.push_back(matriz[matriz_size-2][matriz_size-2][help]);
-                vecinos.push_back(matriz[matriz_size-2][matriz_size-1][help]);
+            else if((y==matriz_size-1 && x==matriz_size-1)){
+                vecinos.push_back(matrizPorts[matriz_size-1][matriz_size-2] );
+                vecinos.push_back(matrizPorts[matriz_size-2][matriz_size-2] );
+                vecinos.push_back(matrizPorts[matriz_size-2][matriz_size-1] );
             }
             else if((y==0 && x!=0 && x!=matriz_size-1)){
-                vecinos.push_back(matriz[0][x-1][help]);
-                vecinos.push_back(matriz[0][x+1][help]);
-                vecinos.push_back(matriz[1][x-1][help]);
-                vecinos.push_back(matriz[1][x+1][help]);
-                vecinos.push_back(matriz[1][x][help]);
+                vecinos.push_back(matrizPorts[y][x-1] );
+                vecinos.push_back(matrizPorts[y][x+1] );
+                vecinos.push_back(matrizPorts[y+1][x-1] );
+                vecinos.push_back(matrizPorts[y+1][x+1] );
+                vecinos.push_back(matrizPorts[y+1][x] );
             }
             else if((y==matriz_size-1 && x!=0 && x!=matriz_size-1)){
-                vecinos.push_back(matriz[matriz_size-1][x-1][help]);
-                vecinos.push_back(matriz[matriz_size-1][x+1][help]);
-                vecinos.push_back(matriz[matriz_size-2][x-1][help]);
-                vecinos.push_back(matriz[matriz_size-2][x+1][help]);
-                vecinos.push_back(matriz[matriz_size-2][x][help]);
+                vecinos.push_back(matrizPorts[matriz_size-1][x-1] );
+                vecinos.push_back(matrizPorts[matriz_size-1][x+1] );
+                vecinos.push_back(matrizPorts[matriz_size-2][x-1] );
+                vecinos.push_back(matrizPorts[matriz_size-2][x+1] );
+                vecinos.push_back(matrizPorts[matriz_size-2][x] );
             }
             else if((x==0 && y!=0 && y!=matriz_size-1)){
-                vecinos.push_back(matriz[y-1][x][help]);
-                vecinos.push_back(matriz[y+1][x][help]);
-                vecinos.push_back(matriz[y-1][x+1][help]);
-                vecinos.push_back(matriz[y+1][x+1][help]);
-                vecinos.push_back(matriz[y][x+1][help]);
+                vecinos.push_back(matrizPorts[y-1][x] );
+                vecinos.push_back(matrizPorts[y+1][x] );
+                vecinos.push_back(matrizPorts[y-1][x+1] );
+                vecinos.push_back(matrizPorts[y+1][x+1] );
+                vecinos.push_back(matrizPorts[y][x+1] );
             }
             else if((x==matriz_size-1 && y!=0 && y!=matriz_size-1)){
-                vecinos.push_back(matriz[y-1][x][help]);
-                vecinos.push_back(matriz[y+1][x][help]);
-                vecinos.push_back(matriz[y-1][x-1][help]);
-                vecinos.push_back(matriz[y+1][x-1][help]);
-                vecinos.push_back(matriz[y][x-1][help]);
+                vecinos.push_back(matrizPorts[y-1][x] );
+                vecinos.push_back(matrizPorts[y+1][x] );
+                vecinos.push_back(matrizPorts[y-1][x-1] );
+                vecinos.push_back(matrizPorts[y+1][x-1] );
+                vecinos.push_back(matrizPorts[y][x-1] );
             }
             else{
-                vecinos.push_back(matriz[y-1][x-1][help]);
-                vecinos.push_back(matriz[y-1][x+1][help]);
-                vecinos.push_back(matriz[y-1][x][help]);
-                vecinos.push_back(matriz[y+1][x+1][help]);
-                vecinos.push_back(matriz[y+1][x-1][help]);
-                vecinos.push_back(matriz[y+1][x][help]);
-                vecinos.push_back(matriz[y][x+1][help]);
-                vecinos.push_back(matriz[y][x-1][help]);
+                vecinos.push_back(matrizPorts[y-1][x-1] );
+                vecinos.push_back(matrizPorts[y-1][x+1] );
+                vecinos.push_back(matrizPorts[y-1][x] );
+                vecinos.push_back(matrizPorts[y+1][x+1] );
+                vecinos.push_back(matrizPorts[y+1][x-1] );
+                vecinos.push_back(matrizPorts[y+1][x] );
+                vecinos.push_back(matrizPorts[y][x+1] );
+                vecinos.push_back(matrizPorts[y][x-1] );
             }
             
             //Pasarselo al cliente
+            struct request req;
             for (int i = 0; i < vecinos.size(); i++)
             {
-                request req;
                 vecinos_str += to_string(vecinos[i]);
                 vecinos_str += " ";
-                strncpy(req.type, "VECINOS", 8);
-                strncpy(req.msg, vecinos_str.c_str(), MENSAJE_MAXIMO);
-                send_request(req, matriz[y][x][1]);
-                sleep(2);
             }            
-            
-        }
-    }
-}
-void connection_handler(int socket_desc,vector<vector<int>> &listaPorts, vector<vector<int>> &listaListen){
-    struct request riq;
-    while(1)
-    {
-        int n;
-        
-        vector<int> helper;
-        int z;
+            strncpy(req.type, "VECINOS", 8);
+            strncpy(req.msg, vecinos_str.c_str(), MENSAJE_MAXIMO);
 
-        n = recv(socket_desc, &riq, 2*MENSAJE_MAXIMO, 0);
-
-        string temp(riq.type);
-
-        if (temp == "PORT"){
-            
-            helper.push_back(socket_desc);
-            string hola = riq.msg;
-            int port = std::stoi(hola);
-            helper.push_back(port);
-            listaPorts.push_back(helper);
-            
-            
-            cout << "Servidor Recibi: ";
-            cout << riq.type;
-            cout << " ";
-            cout << riq.msg << endl;
-            
+            send_request(&req, matrizSocket[y][x]);
         }
-        else if (temp == "S_Listen"){
-            
-                helper.push_back(socket_desc);
-                string hola = riq.msg;
-                int port = std::stoi(hola);
-                helper.push_back(port);
-                cout << "Servidor Recibi: ";
-                cout << riq.type;
-                cout << " ";
-                cout << riq.msg << endl;
-                listaListen.push_back(helper);
-                
-        }
-        
-        if (listaPorts.size() == 9 && listaListen.size() == 9){
-            
-            if (po == 0){
-                po++;
-                struct request riq;
-                vector<vector<vector<int>>> matriz = crearMatriz(listaPorts, listaListen);
-                conectar_Vecinos(matriz, 3);
-                
-            }
-        }
-        
     }
 }
 
@@ -186,14 +129,18 @@ void server_accept_conns(int s)
 {
     int clientes = 0;
     int client_len = 0;
-    vector <thread> threads;
     int socketNuevo;
-    list<int> grilla;
+    int z=0;
+    vector<int> sockets;
+
+    vector<vector<int>> matrizPorts;
+    vector<vector<int>> matrizSocket;
+
     vector<vector<int>> listaPorts;
     vector<vector<int>> listaListen;
     struct sockaddr_in remote;
     struct request req;
-    int z=0;
+   
     while(1)
     {
         /* Acpetar nueva celula*/
@@ -203,8 +150,37 @@ void server_accept_conns(int s)
             exit(-1);
         }
         else{
-            threads.push_back(thread(connection_handler, socketNuevo, ref(listaPorts), ref(listaListen)));
-            
+            sockets.push_back(socketNuevo);
+            if (sockets.size() == 9){
+                for (int y = 0; y < 3; y++)
+                {
+                    vector<int> helperSocket;
+                    for (int x = 0; x < 3; x++)
+                    {
+                        helperSocket.push_back(sockets[z]);
+                        z++;
+                    }
+                    matrizSocket.push_back(helperSocket);
+		        }
+                
+                for (int i = 0; i < matrizSocket.size(); i++){
+                    vector<int> helperPorts;
+                    for (int j = 0; j < matrizSocket.size(); j++){
+                        struct request req;
+
+                        get_request(&req, matrizSocket[i][j]);
+					    
+                        string puerto = req.msg;
+
+                        cout << "El puerto es: ";
+                        cout << puerto <<endl;
+
+                        helperPorts.push_back(stoi(puerto));
+                    }
+                    matrizPorts.push_back(helperPorts);
+                }
+                conectar_Vecinos(matrizPorts, matrizSocket);
+            }
         }
         
         /* Si ya hay suficientes para armar matriz de 3x3 o para agregar L*/
@@ -215,9 +191,6 @@ void server_accept_conns(int s)
         /* TO DO*/   
 
     }
-    threads[clientes].join();
-    close(socketNuevo);
-    close(s);
 }
 
 
@@ -225,7 +198,7 @@ int main(int argc, char* argv[])
 {
     int s;
     struct sockaddr_in local;
-    thread threads[2];
+	vector<thread> threads;
 
     /* crea socket */
     if ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -251,11 +224,13 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    threads[0]= thread(server_accept_conns, s);
+    threads.push_back(thread(server_accept_conns, s));
 
+    for (int i = 0; i < threads.size(); i++)
+	{
+		threads[i].join();
+	}
 
-
-    threads[0].join();
     close(s);
     return 0;
 }

@@ -1,79 +1,23 @@
 #include "header.h"
 
 
-vector<vector<vector<int>>> crearMatriz(vector<vector<int>> &listaPorts, vector<vector<int>> &listaListen)
-{
-    int ayuda = 0;
-    int equiz = 0;
-    int equis = 0;
-    vector<int> listaHelper;
-    vector<vector<int>> listalistahelper;
-    vector<vector<vector<int>>> matriz;
-    
-    //Ordenar las listas para juntar puertos con socketListen con Socket de conexion.
-    
-    
-
-    for (int y = 0; y < 3 ; y++)
-    {
-        vector<vector<int>> value;
-        for (int x = 0; x < 3; x++)
-        {
-            vector<int> value2;
-            for(int z=0;z<3;z++){
-                value2.push_back(0);
-            }
-            value.push_back(value2);
-        }
-        matriz.push_back(value);
-    }
-    
-    for (int y = 0; y < 3 ; y++)
-    {
-
-        for (int x = 0; x < 3; x++)
-        {
-            for (int z=0;z<3;z++){
-                if(z==0){
-                    matriz[y][x][z]=listaListen[equiz][0];
-                    equiz++;
-                }
-                else if(z==1){
-                    matriz[y][x][z]=listaListen[equis][1];
-                    equis++;
-                }
-                else{
-
-                    matriz[y][x][z]=listaPorts[ayuda][1];
-                    ayuda++;
-                }
-
-            }
-        }    
-    }
-    return matriz;
-}
-
-
 // Dado un puntero a un request req y un socket s, recibe una request en s y la 
 // almacena en req. La funcion es bloqueante
-void get_request(struct request req, int s)
+void get_request(struct request* req, int s)
 {
-    int n = recv(s, &req,MENSAJE_MAXIMO, 0);
-    if (n == -1){
+    char charR[MENSAJE_MAXIMO+10];
+    int n = recv(s, charR,MENSAJE_MAXIMO+10, 0);
+    if (n < 0 ){
         perror("error recibiendo");
         exit(1);
     }
-    else{
-        cout << "Cliente Recibi: ";
-    
-        cout << req.type << endl;
-        cout << req.msg << endl;
-    }
+    //RARO
+    strncpy(req->type,((struct request*)charR)->type, 10);
+    strncpy(req->msg, ((struct request*)charR)->msg, MENSAJE_MAXIMO);
 }
 
-void send_request(struct request req, int s){
-    int socket = send(s, &req , MENSAJE_MAXIMO, 0);
+void send_request(struct request* req, int s){
+    int socket = send(s, (char *) req , MENSAJE_MAXIMO, 0);
     if ( socket < 0) { 
     	perror("error enviando");
     }
