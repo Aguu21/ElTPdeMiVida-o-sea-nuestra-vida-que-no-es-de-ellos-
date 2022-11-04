@@ -11,7 +11,7 @@ void get_request(struct request* req, int s)
         perror("error recibiendo");
         exit(1);
     }
-    //RARO
+
     strncpy(req->type,((struct request*)charR)->type, 10);
     strncpy(req->msg, ((struct request*)charR)->msg, MENSAJE_MAXIMO);
 }

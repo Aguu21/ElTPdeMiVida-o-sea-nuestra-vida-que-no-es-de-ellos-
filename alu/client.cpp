@@ -176,7 +176,7 @@ int main(int argc, char* argv[]){
 
     /* configura dirección */
     srand(time(0));
-    int puerto_Socket = 1025 + rand();
+    int puerto_Socket = 1025 + (rand()%128);
     local.sin_family = AF_INET;
     local.sin_port = htons(puerto_Socket);
     local.sin_addr.s_addr = INADDR_ANY;
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]){
     threads.push_back(thread(client_accept_conns, s_listen, ref(lVecinos)));
 
     struct request req;
-    string puerto = to_string(local.sin_port);
+    string puerto = to_string(puerto_Socket);
     strncpy(req.type, "PORT", 6);
     strncpy(req.msg, puerto.c_str(), sizeof(puerto.c_str()));
     send_request(&req, socket_fd);
