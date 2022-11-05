@@ -17,7 +17,6 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <thread>
-#include <stdio.h>
 #include <iostream>
 #include <sys/uio.h>
 #include <vector>

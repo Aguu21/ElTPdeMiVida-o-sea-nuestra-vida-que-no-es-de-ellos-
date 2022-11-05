@@ -87,7 +87,7 @@ void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matri
 }
 
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
-void draw()
+void draw(vector<vector<int>> estados)
 {
     /* TO DO*/
 }
@@ -95,9 +95,58 @@ void draw()
 // Servicio timer: Cada cierto intervalo de tiempo publica un tick. 
 //Es importante que cada tick se envie utilizando el mapa de vecinos actualizado
 
-void timer()
+void timer(vector<vector<int>> matrizSocket)
 {
-   /* TO DO*/
+    for (int y = 0; y < matrizSocket.size(); y++)
+    {
+        for (int x = 0; x < matrizSocket.size(); x++)
+        {
+            struct request req;
+            
+            strncpy(req.type, "SETEATE", 8);
+            strncpy(req.msg, "dale wachin", MENSAJE_MAXIMO);
+
+            send_request(&req, matrizSocket[y][x]);
+            sleep(1);
+        }       
+    }
+    while(1){
+        struct request req;
+        vector<vector<int>> estados;
+        /* Getea los estados de los clientes y cuando termine printea el mapa y les manda el tick*/
+        for (int i = 0; i< matrizSocket.size(); i++)
+        {
+            vector<int> estadito;
+            for(int j = 0; j < matrizSocket.size(); j++)
+            {
+                struct request req;
+                get_request(&req, matrizSocket[i][j]);
+                std::string gelp;
+                gelp =  req.msg;
+                estadito.push_back(stoi(gelp));
+                
+            }
+            estados.push_back(estadito);
+        }
+        
+        for (int y = 0; y < matrizSocket.size(); y++)
+        {
+            for (int x = 0; x < matrizSocket.size(); x++)
+            {
+                struct request req;
+                
+                strncpy(req.type, "TICK", 8);
+                strncpy(req.msg, "dale wachO", MENSAJE_MAXIMO);
+
+                send_request(&req, matrizSocket[y][x]);
+                
+            }
+            
+        }
+        
+
+
+    }
 }
 
 
@@ -140,7 +189,7 @@ void server_accept_conns(int s)
     vector<vector<int>> listaListen;
     struct sockaddr_in remote;
     struct request req;
-   
+    vector<vector<int>> estados;
     while(1)
     {
         /* Acpetar nueva celula*/
@@ -180,6 +229,10 @@ void server_accept_conns(int s)
                     matrizPorts.push_back(helperPorts);
                 }
                 conectar_Vecinos(matrizPorts, matrizSocket);
+                              
+                timer(matrizSocket);
+                
+            
             }
         }
         

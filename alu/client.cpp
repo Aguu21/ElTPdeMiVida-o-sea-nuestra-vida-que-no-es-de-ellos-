@@ -33,18 +33,12 @@ int connect_socket(int puerto)
 }
 
 
-// Dada una lista de puertos de vecinos, conecta el cliente con cada vecino
-// agregando cada socket al vector de sockets
-void con2neigh(string list, vector<int>& sockets)
-{
-    // TO DO
-}
-
 // Dado el estado actual de la celula y el estado de los vecinos en una ronda
 // computa el nuevo estado de la celula segun las reglas del juego
-bool set_state(bool alive, const vector<request>& cl)
+bool set_state(bool alive, const vector<int>& cl)
 {
 	// TO DO
+
     return true;
 }
 
@@ -137,6 +131,7 @@ void client_connects(vector<int> Portslist, vector<int> &sVecinos){
     for(int i = 0; i < Portslist.size(); i++){
         sVecinos.push_back(connect_socket(Portslist[i]));
     }
+
 }
 
 int main(int argc, char* argv[]){
@@ -202,7 +197,7 @@ int main(int argc, char* argv[]){
     strncpy(req.msg, puerto.c_str(), sizeof(puerto.c_str()));
     send_request(&req, socket_fd);
     cout << req.msg << endl;
-
+    
     while(1) {
         struct request roq;
         
@@ -227,7 +222,28 @@ int main(int argc, char* argv[]){
             }
             cout << "" << endl;
             threads.push_back(thread(client_connects, Portslist, ref(sVecinos)));
+            
+            
 		}
+        /* El server les manda a todos los clientes que se seteen un estado aleatorio*/
+        if(strncmp(roq.type, "SETEATE", 8) == 0){
+            
+            srand(getpid());
+            int estado = rand() % 2;
+            cout << to_string(estado) << endl;
+            struct request ruq;
+            strncpy(ruq.type, "ESTADO", 6);
+            strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
+            send_request(&ruq, socket_fd);
+            
+        }
+        /* El server les manda el tick y se fija en que estados estan sus vencinos*/
+        if(strncmp(roq.type, "TICK", 8) == 0){
+            
+            cout << "tiktok" << endl;
+            
+        }
+       
     }
     
 	for (int i = 0; i < threads.size(); i++)
