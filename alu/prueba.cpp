@@ -4,10 +4,9 @@ using namespace std;
 bool estado = false;                 //siendo true viva, false muerta
 int muertos = 0;
 int vivos = 0;
-vector<bool> vivosMuertos = [];
 
-void(vector<bool> vivosMuertos){
-    for (int i= 0, i < vivosMuertos.size(), i++){
+void cambiar_estado(vector<bool>vivosMuertos){
+    for (int i= 0; i < vivosMuertos.size() ; i++){
         if (vivosMuertos[i] = false){
             muertos++;
         }
@@ -15,11 +14,11 @@ void(vector<bool> vivosMuertos){
             vivos++;
         }
     }
-    if (estado ==false) || (vivos == 3){
+    if ((estado ==false) || (vivos == 3)){
         estado = true;
     }
 
-    if (estado ==true) || (vivos == 3) || (vivos == 2){
+    if ((estado ==true) || (vivos == 3) || (vivos == 2)){
         estado = true;
     }
     else{
