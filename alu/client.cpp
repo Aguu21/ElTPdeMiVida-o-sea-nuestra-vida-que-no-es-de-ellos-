@@ -177,8 +177,7 @@ int main(int argc, char* argv[]){
     }
 
     /* configura dirección */
-    srand(time(0));
-    int puerto_Socket = 1025 + (rand()%128);
+    int puerto_Socket = atoi(argv[1]);
     local.sin_family = AF_INET;
     local.sin_port = htons(puerto_Socket);
     local.sin_addr.s_addr = INADDR_ANY;
