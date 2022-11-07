@@ -33,6 +33,13 @@ int connect_socket(int puerto)
 }
 
 
+// Dada una lista de puertos de vecinos, conecta el cliente con cada vecino
+// agregando cada socket al vector de sockets
+void con2neigh(string list, vector<int>& sockets)
+{
+    // TO DO
+}
+
 // Dado el estado actual de la celula y el estado de los vecinos en una ronda
 // computa el nuevo estado de la celula segun las reglas del juego
 bool set_state(bool alive, const vector<int>& cl)
@@ -121,18 +128,43 @@ void client_accept_conns(int s, vector<int> &listListen)
             perror("Error aceptando");
             exit(1);
         }
-        cout<< "Acepté a: ";
-        cout << socketNuevo << endl;
         listListen.push_back(socketNuevo);
     }
 }
 
-void client_connects(vector<int> Portslist, vector<int> &sVecinos){
-    for(int i = 0; i < Portslist.size(); i++){
-        sVecinos.push_back(connect_socket(Portslist[i]));
+void client_connects(vector<int> Portslist, vector<int> &sVecinos, vector<int> &newPortlist, bool &primeraVez){
+    if (primeraVez){
+        for(int i = 0; i < Portslist.size(); i++){
+            sVecinos.push_back(connect_socket(Portslist[i]));
+        }
+        newPortlist=Portslist;
+        primeraVez = false;
     }
-
+    else{
+        vector<int> helper;
+        int z = 0;
+        for(int i = 0; i < (Portslist.size()); i++){
+            for(int j = 0; j < newPortlist.size(); j++){
+                if(Portslist[i] == newPortlist[j]){
+                    z+=1;
+                }
+            }
+            if (z < 1){
+                helper.push_back(Portslist[i]);
+            }
+            else{
+                z=0;
+            }
+        }
+        if(helper.size()!=0){
+            for(int i = 0; i < helper.size(); i++){
+                newPortlist.push_back(helper[i]);
+                sVecinos.push_back(connect_socket(helper[i]));
+            }
+        }
+    }
 }
+
 
 int main(int argc, char* argv[]){
     int socket_fd;
@@ -226,7 +258,7 @@ int main(int argc, char* argv[]){
             
 		}
         /* El server les manda a todos los clientes que se seteen un estado aleatorio*/
-        if(strncmp(roq.type, "SETEATE", 8) == 0){
+        else if(strncmp(roq.type, "SETEATE", 8) == 0){
             
             srand(getpid());
             int estado = rand() % 2;

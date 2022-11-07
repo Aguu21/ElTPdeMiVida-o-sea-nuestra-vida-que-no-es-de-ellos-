@@ -87,9 +87,17 @@ void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matri
 }
 
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
-void draw(vector<vector<int>> estados)
+void draw(vector<vector<int>> matrizEstados)
 {
-    /* TO DO*/
+    for (int y = 0; y < matrizEstados.size() ; y++){
+        for (int x = 0; x < matrizEstados.size(); x++)
+        {
+            cout << " | ";
+            cout << matrizEstados[y][x];
+            cout << " | ";
+        }
+        cout << "" << endl;
+    }
 }
 
 // Servicio timer: Cada cierto intervalo de tiempo publica un tick. 
@@ -180,6 +188,7 @@ void server_accept_conns(int s)
     int client_len = 0;
     int socketNuevo;
     int z=0;
+    int lvl=0;
     vector<int> sockets;
 
     vector<vector<int>> matrizPorts;
@@ -190,6 +199,11 @@ void server_accept_conns(int s)
     struct sockaddr_in remote;
     struct request req;
     vector<vector<int>> estados;
+
+    int ultSocketY = 0;
+    int ultSocketX = 0;
+    int size = 0;
+
     while(1)
     {
         /* Acpetar nueva celula*/
@@ -200,39 +214,78 @@ void server_accept_conns(int s)
         }
         else{
             sockets.push_back(socketNuevo);
-            if (sockets.size() == 9){
-                for (int y = 0; y < 3; y++)
-                {
-                    vector<int> helperSocket;
-                    for (int x = 0; x < 3; x++)
+            if (sockets.size() == 9 || sockets.size() == (9+(7+2*lvl))){
+                if (sockets.size() == 9){
+                    for (int y = 0; y < 3; y++)
                     {
-                        helperSocket.push_back(sockets[z]);
-                        z++;
+                        vector<int> helperSocket;
+                        for (int x = 0; x < 3; x++)
+                        {
+                            helperSocket.push_back(sockets[z]);
+                            z++;
+                        }
+                        matrizSocket.push_back(helperSocket);
                     }
+                    
+                    for (int i = 0; i < matrizSocket.size(); i++){
+                        vector<int> helperPorts;
+                        for (int j = 0; j < matrizSocket.size(); j++){
+                            struct request req;
+
+                            get_request(&req, matrizSocket[i][j]);
+                            
+                            string puerto = req.msg;
+
+                            cout << "El puerto es: ";
+                            cout << puerto <<endl;
+
+                            helperPorts.push_back(stoi(puerto));
+                        }
+                        matrizPorts.push_back(helperPorts);
+                    }
+                    conectar_Vecinos(matrizPorts, matrizSocket);
+                                
+                    timer(matrizSocket);
+                }
+                else{
+                    //Llenar matrizSockets
+                    ultSocketY=sockets.size();
+                    ultSocketX=sockets.size();
+                    size = matrizSocket.size();
+
+                    vector<int> helperSocket;
+                    for (int x = 0; x < (size+1); x++){
+                        ultSocketX+=x;
+                        helperSocket.push_back(sockets[ultSocketX]);
+                    }
+
+                    for (int y = 0; y < size; y++){
+                        ultSocketY+=y;
+                        matrizSocket[y].push_back(sockets[ultSocketY]);
+                    }
+                    
                     matrizSocket.push_back(helperSocket);
-		        }
-                
-                for (int i = 0; i < matrizSocket.size(); i++){
-                    vector<int> helperPorts;
-                    for (int j = 0; j < matrizSocket.size(); j++){
-                        struct request req;
-
-                        get_request(&req, matrizSocket[i][j]);
-					    
+                    
+                    //Pedir request de Ports y meterlos en matrizPorts
+                    for (int y = 0; y < (matrizSocket.size()-2); y++){
+                        get_request(&req, matrizSocket[y][matrizSocket.size()-1]);
                         string puerto = req.msg;
-
-                        cout << "El puerto es: ";
-                        cout << puerto <<endl;
-
+                        matrizPorts[y].push_back(stoi(puerto));
+                    }
+                    vector<int> helperPorts;
+                    for (int x = 0; x < (matrizSocket.size()-1); x++){
+                        get_request(&req, matrizSocket[matrizSocket.size()-1][x]);
+                        string puerto = req.msg;
                         helperPorts.push_back(stoi(puerto));
                     }
                     matrizPorts.push_back(helperPorts);
+
+                    conectar_Vecinos(matrizPorts, matrizSocket);
+                    
+                    timer(matrizSocket);
+
+                    lvl+=1;
                 }
-                conectar_Vecinos(matrizPorts, matrizSocket);
-                              
-                timer(matrizSocket);
-                
-            
             }
         }
         
