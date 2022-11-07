@@ -85,7 +85,25 @@ void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matri
         }
     }
 }
-
+int powInt(int x, int y)
+{
+    for (int i = 0; i < y; i++)
+    {
+        x *= 10;
+    }
+    return x;
+}
+int parseInt(char* chars)
+{
+    int sum = 0;
+    int len = strlen(chars);
+    for (int x = 0; x < len; x++)
+    {
+        int n = chars[len - (x + 1)] - '0';
+        sum = sum + powInt(n, x);
+    }
+    return sum;
+}
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
 void draw(vector<vector<int>> matrizEstados)
 {
@@ -97,7 +115,9 @@ void draw(vector<vector<int>> matrizEstados)
             cout << " | ";
         }
         cout << "" << endl;
+
     }
+    cout << "\n" << endl;
 }
 
 // Servicio timer: Cada cierto intervalo de tiempo publica un tick. 
@@ -129,9 +149,8 @@ void timer(vector<vector<int>> matrizSocket)
             {
                 struct request req;
                 get_request(&req, matrizSocket[i][j]);
-                std::string gelp;
-                gelp =  req.msg;
-                estadito.push_back(stoi(gelp));
+                int help = parseInt(req.msg);
+                estadito.push_back(help);
                 
             }
             estados.push_back(estadito);
@@ -151,9 +170,9 @@ void timer(vector<vector<int>> matrizSocket)
             }
             
         }
-        
+        draw(estados);
 
-
+        sleep(5);
     }
 }
 

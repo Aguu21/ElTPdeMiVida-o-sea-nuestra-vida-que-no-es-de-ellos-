@@ -31,7 +31,25 @@ int connect_socket(int puerto)
     }
     return socket_nuevo;
 }
-
+int powInt(int x, int y)
+{
+    for (int i = 0; i < y; i++)
+    {
+        x *= 10;
+    }
+    return x;
+}
+int parseInt(char* chars)
+{
+    int sum = 0;
+    int len = strlen(chars);
+    for (int x = 0; x < len; x++)
+    {
+        int n = chars[len - (x + 1)] - '0';
+        sum = sum + powInt(n, x);
+    }
+    return sum;
+}
 
 // Dada una lista de puertos de vecinos, conecta el cliente con cada vecino
 // agregando cada socket al vector de sockets
@@ -49,71 +67,26 @@ bool set_state(bool alive, const vector<int>& cl)
     return true;
 }
 
-int run_cell(int port)
-{   
-    char                buf[MENSAJE_MAXIMO+1];
-    struct request      srv_req;
-    int                 srv_socket, accepting_socket;
-    // Definir estructuras para manejar los sockets
-    // Sugerancia: Diferenciar los canales donde la celula publica su estado
-    //             de los que usa para recibir estado de sus vecinos
-  
-    /* Conectarse al server */
-    srv_socket = connect_socket(htons(port));
-
-    /* Crear socket de escucha y permitir aceptar conexiones concurrentemente */
-
-    int lsn_port = 0/* TO DO*/ ;
-    int acc_sock_fd = 0;/* TO DO*/
-    /* TO DO*/
-  
-    /* Enviar msg al srv con el puerto de escucha */
-    /* TO DO*/
+void calcularEstadito(vector<int> estadosVecinos, int &estado)
+{
+    int vivos;
     
-    /* Obtener lista de vecinos inicial */
-    /* TO DO*/
-
-    /* Conectarse a los vecinos */
-    /* TO DO*/ 
-
-    /* Enviar msg ready para el server */
-    /* TO DO*/
-
-    /* Comenzar juego */
-    srand(getpid());
-    char alive = random() % 2;
-    while(1)
-    {
-        // Esperar request del srv
-        get_request(&srv_req, srv_socket);
-        if (strncmp(srv_req.type,"TICK",4) == 0)
+    for (int i= 0; i < estadosVecinos.size(); i++){
+        if (estadosVecinos[i] == 1)
         {
-            /* Publicar estado*/
-            /* TO DO*/
-
-            /* Obtener estado de los vecinos*/
-            /* TO DO*/
-
-            /* Computar nuevo estado*/
-            /* TO DO*/
-
-            /* Informar al srv nuevo estado*/
-            /* TO DO*/
+            vivos++;
         }
-        else if (strncmp(srv_req.type,"NEW",3) == 0)
-        {
-            /* Conectarse a los nuevos vecinos*/
-            /* TO DO*/
-
-            /* Avisar con CLIENT_READY al srv*/
-            /* TO DO*/
-
-        } 
-
+        
     }
-    
-    return 0;
+    if (estado == 0 && vivos == 3){
+        estado = 1;
+    }
+    else if(estado == 1 && (vivos < 2 || vivos > 3))
+    {
+        estado = 0;
+    }
 }
+
 
 void client_accept_conns(int s, vector<int> &listListen)
 {
@@ -175,9 +148,11 @@ int main(int argc, char* argv[]){
     vector<int> Portslist;
     vector<int> sVecinos;
     vector<int> lVecinos;
+    vector<int> newPortlist;
+    bool primeraVez = true;
     int s;
     int s_listen;
-    
+    int estado;
     /* crea socket */
     if ((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
         perror("creando socket");
@@ -229,7 +204,7 @@ int main(int argc, char* argv[]){
     strncpy(req.msg, puerto.c_str(), sizeof(puerto.c_str()));
     send_request(&req, socket_fd);
     cout << req.msg << endl;
-    
+    vector<int> estadosVecinos;
     while(1) {
         struct request roq;
         
@@ -253,16 +228,16 @@ int main(int argc, char* argv[]){
                 cout << " ";
             }
             cout << "" << endl;
-            threads.push_back(thread(client_connects, Portslist, ref(sVecinos)));
+            threads.push_back(thread(client_connects, Portslist, ref(sVecinos),ref(newPortlist), ref(primeraVez)));
             
             
 		}
         /* El server les manda a todos los clientes que se seteen un estado aleatorio*/
-        else if(strncmp(roq.type, "SETEATE", 8) == 0){
+        if(strncmp(roq.type, "SETEATE", 8) == 0){
             
             srand(getpid());
-            int estado = rand() % 2;
-            cout << to_string(estado) << endl;
+            estado = rand() % 2;
+            
             struct request ruq;
             strncpy(ruq.type, "ESTADO", 6);
             strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
@@ -272,8 +247,30 @@ int main(int argc, char* argv[]){
         /* El server les manda el tick y se fija en que estados estan sus vencinos*/
         if(strncmp(roq.type, "TICK", 8) == 0){
             
-            cout << "tiktok" << endl;
+
+            estadosVecinos.clear();
+            for(int o = 0; o < lVecinos.size(); o++){
+                struct request ruq;
+                strncpy(ruq.type, "ESTADOVECINO", 12);
+                strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
             
+                send_request(&ruq, lVecinos[o]);
+            }
+                
+            
+            for(int i = 0; i < sVecinos.size(); i++){
+                struct request req;
+                get_request(&req, sVecinos[i]);
+                int help = parseInt(req.msg);
+                estadosVecinos.push_back(help);
+            }
+            calcularEstadito(estadosVecinos, ref(estado));
+            cout<< estado << endl;
+
+            struct request ruq;
+            strncpy(ruq.type, "ESTADO", 6);
+            strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
+            send_request(&ruq, socket_fd);
         }
        
     }
