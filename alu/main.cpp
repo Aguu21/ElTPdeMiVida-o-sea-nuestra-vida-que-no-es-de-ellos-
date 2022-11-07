@@ -22,18 +22,20 @@ int main(int argc, char const *argv[])
             while (test == false){
                 for (int i = 0; i < ports.size(); i++){
                     if(port == ports[i]){
+                      
                         cant++;        
                     }
                 }
                 if (cant != 0){
                     cant = 0;
                     port = 1025 + (rand()%128);
+                    
                 }
                 else{
                     test = true;
                 }
             }
-        }           
+        }  
         ports.push_back(port);
         threads.push_back(thread(clients, port));
         sleep(2);

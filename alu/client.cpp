@@ -121,6 +121,7 @@ void client_connects(vector<int> Portslist, vector<int> &sVecinos, vector<int> &
                 if(Portslist[i] == newPortlist[j]){
                     z+=1;
                 }
+
             }
             if (z < 1){
                 helper.push_back(Portslist[i]);
@@ -264,8 +265,6 @@ int main(int argc, char* argv[]){
                 estadosVecinos.push_back(help);
             }
             calcularEstadito(estadosVecinos, ref(estado));
-            cout<< estado << endl;
-
             struct request ruq;
             strncpy(ruq.type, "ESTADO", 6);
             strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
