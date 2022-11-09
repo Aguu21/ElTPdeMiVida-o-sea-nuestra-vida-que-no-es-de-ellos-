@@ -1,9 +1,6 @@
 #include "header.h"
 using namespace std;
 
-// Sugerencia: El servidor va a necestiar varios threads. Recordar que peuden
-// compartir variables y que por lo tanto las herramientas de sincronziacion
-// como semaforos son perfectamente validas.
 void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matrizSocket){
     int matriz_size = matrizSocket.size();
     for (int y = 0; y < matrizSocket.size() ; y++)
@@ -12,48 +9,48 @@ void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matri
         {
             vector<int> vecinos;
             string vecinos_str;
-            if (y==0 && x==0){
+            if (y == 0 && x == 0){
                 vecinos.push_back(matrizPorts[y][x+1]);
                 vecinos.push_back(matrizPorts[y+1][x+1]);
                 vecinos.push_back(matrizPorts[y+1][x]);
             }
-            else if((y==0 && x==matriz_size-1)){
+            else if((y == 0 && x == matriz_size - 1)){
                 vecinos.push_back(matrizPorts[y][matriz_size-2] );
                 vecinos.push_back(matrizPorts[y+1][matriz_size-1] );
                 vecinos.push_back(matrizPorts[y+1][matriz_size-2] );                
             }
-            else if((y==matriz_size-1 && x==0)){
+            else if((y == matriz_size - 1 && x == 0)){
                 vecinos.push_back(matrizPorts[matriz_size-2][x] );
                 vecinos.push_back(matrizPorts[matriz_size-2][x+1] );
                 vecinos.push_back(matrizPorts[matriz_size-1][x+1] );
             }
-            else if((y==matriz_size-1 && x==matriz_size-1)){
+            else if((y == matriz_size - 1 && x == matriz_size - 1)){
                 vecinos.push_back(matrizPorts[matriz_size-1][matriz_size-2] );
                 vecinos.push_back(matrizPorts[matriz_size-2][matriz_size-2] );
                 vecinos.push_back(matrizPorts[matriz_size-2][matriz_size-1] );
             }
-            else if((y==0 && x!=0 && x!=matriz_size-1)){
+            else if((y == 0 && x != 0 && x != matriz_size - 1)){
                 vecinos.push_back(matrizPorts[y][x-1] );
                 vecinos.push_back(matrizPorts[y][x+1] );
                 vecinos.push_back(matrizPorts[y+1][x-1] );
                 vecinos.push_back(matrizPorts[y+1][x+1] );
                 vecinos.push_back(matrizPorts[y+1][x] );
             }
-            else if((y==matriz_size-1 && x!=0 && x!=matriz_size-1)){
+            else if((y == matriz_size - 1 && x != 0 && x != matriz_size - 1)){
                 vecinos.push_back(matrizPorts[matriz_size-1][x-1] );
                 vecinos.push_back(matrizPorts[matriz_size-1][x+1] );
                 vecinos.push_back(matrizPorts[matriz_size-2][x-1] );
                 vecinos.push_back(matrizPorts[matriz_size-2][x+1] );
                 vecinos.push_back(matrizPorts[matriz_size-2][x] );
             }
-            else if((x==0 && y!=0 && y!=matriz_size-1)){
+            else if((x == 0 && y != 0 && y != matriz_size - 1)){
                 vecinos.push_back(matrizPorts[y-1][x] );
                 vecinos.push_back(matrizPorts[y+1][x] );
                 vecinos.push_back(matrizPorts[y-1][x+1] );
                 vecinos.push_back(matrizPorts[y+1][x+1] );
                 vecinos.push_back(matrizPorts[y][x+1] );
             }
-            else if((x==matriz_size-1 && y!=0 && y!=matriz_size-1)){
+            else if((x == matriz_size - 1 && y != 0 && y != matriz_size - 1)){
                 vecinos.push_back(matrizPorts[y-1][x] );
                 vecinos.push_back(matrizPorts[y+1][x] );
                 vecinos.push_back(matrizPorts[y-1][x-1] );
@@ -85,6 +82,7 @@ void conectar_Vecinos(vector<vector<int>> matrizPorts, vector<vector<int>> matri
         }
     }
 }
+
 int powInt(int x, int y)
 {
     for (int i = 0; i < y; i++)
@@ -93,6 +91,7 @@ int powInt(int x, int y)
     }
     return x;
 }
+
 int parseInt(char* chars)
 {
     int sum = 0;
@@ -104,6 +103,7 @@ int parseInt(char* chars)
     }
     return sum;
 }
+
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
 void draw(vector<vector<int>> matrizEstados)
 {
@@ -125,96 +125,61 @@ void draw(vector<vector<int>> matrizEstados)
 
 void timer(vector<vector<int>> matrizSocket, bool &sigo)
 {
-    
     while(sigo){
         struct request req;
         vector<vector<int>> estados;
         /* Getea los estados de los clientes y cuando termine printea el mapa y les manda el tick*/
-        for (int i = 0; i< matrizSocket.size(); i++)
-        {
+        for (int i = 0; i< matrizSocket.size(); i++){
+
             vector<int> estadito;
-            for(int j = 0; j < matrizSocket.size(); j++)
-            {
+            for(int j = 0; j < matrizSocket.size(); j++){
+                
                 struct request req;
                 get_request(&req, matrizSocket[i][j]);
                 int help = parseInt(req.msg);
                 estadito.push_back(help);
-                
             }
             estados.push_back(estadito);
         }
         
-        for (int y = 0; y < matrizSocket.size(); y++)
-        {
-            for (int x = 0; x < matrizSocket.size(); x++)
-            {
+        for (int y = 0; y < matrizSocket.size(); y++){
+            for (int x = 0; x < matrizSocket.size(); x++){
+                
                 struct request req;
                 
                 strncpy(req.type, "TICK", 8);
                 strncpy(req.msg, "dale wachO", MENSAJE_MAXIMO);
 
                 send_request(&req, matrizSocket[y][x]);
-                
-            }
-            
+            } 
         }
         draw(estados);
-
         sleep(5);
     }
 }
 
-
-
-// Thread map_creator: Agrega los nuevos nodos al mapa
-void map_creator(/* TO DO*/)
-{
-    /* Registrar los lsn ports de los nuevos */
-    /* TIP: Hay que esperar que los clientes manden el mensaje con el lsn port*/
-    /* Varias formas de hacerlo, pselect puede resultar comodo para este caso */
-    /* Crear threads podria ser demasiado overhead, pero es valido */
-    /* TO DO*/
-
-    // Avisar a las celulas que correspondan la nueva estructura de vecinos
-    // TIP: Puede ser util separar el caso inicial del resto, sobre todo para
-    //      facilitar luego el testeo
-    int N;
-    if(N ==3){
-        //base_case_3x3(/* TO DO*/);
-        return;
-    }
-    //general_case_nxn(/* TO DO*/);
-
-}
-
-
-
 void server_accept_conns(int s)
 {
-    int clientes = 0;
     int client_len = 0;
     int socketNuevo;
-    int z=0;
-    int lvl=0;
+    int z = 0;
+    int lvl = 0;
     vector<int> sockets;
     vector<thread> threads;
     vector<vector<int>> matrizPorts;
     vector<vector<int>> matrizSocket;
 
-    vector<vector<int>> listaPorts;
-    vector<vector<int>> listaListen;
     struct sockaddr_in remote;
     struct request req;
     vector<vector<int>> estados;
 
-    int ultSocketY = 0;
-    int ultSocketX = 0;
+    int ultSocket = 0;
     int size = 0;
-    bool sigo=true;
+    bool sigo = true;
     
     while(1)
     {
-        /* Acpetar nueva celula*/
+        /* Aceptar nueva celula*/
         client_len = sizeof(remote);
         if((socketNuevo = accept(s, (struct sockaddr *) &remote, (socklen_t*) &client_len)) < 0){
             perror("Error aceptando");
@@ -269,39 +234,39 @@ void server_accept_conns(int s)
                     /* El server lea manda a los clientes que se seteen un estado*/
                     
                 }
-                else if (sockets.size() == (matrizSocket.size()+1)*(matrizSocket.size()+1)){
+                else if (sockets.size() == (matrizSocket.size() + 1) * (matrizSocket.size() + 1)){
                     //Llenar matrizSockets
                     
-                    ultSocketX=matrizSocket.size() * matrizSocket.size();
+                    ultSocket = matrizSocket.size() * matrizSocket.size();
                     size = matrizSocket.size();
                     sigo = false;
                     vector<int> helperSocket;
                     
-                    for (int x = 0; x < (size+1); x++){
+                    for (int x = 0; x < (size + 1); x++){
                         
-                        helperSocket.push_back(sockets[ultSocketX]);
-                        ultSocketX+=1;
+                        helperSocket.push_back(sockets[ultSocket]);
+                        ultSocket+=1;
                     }
                     
                     for (int y = 0; y < size; y++){
                         
-                        matrizSocket[y].push_back(sockets[ultSocketX]);
-                        ultSocketX+=1;
+                        matrizSocket[y].push_back(sockets[ultSocket]);
+                        ultSocket+=1;
                     }
                     
                     matrizSocket.push_back(helperSocket);
                    
                     //Pedir request de Ports y meterlos en matrizPorts
-                    for (int y = 0; y < (matrizSocket.size()-1); y++){
+                    for (int y = 0; y < (matrizSocket.size() - 1); y++){
                         
-                        get_request(&req, matrizSocket[y][matrizSocket.size()-1]);
+                        get_request(&req, matrizSocket[y][matrizSocket.size() - 1]);
                         string puerto = req.msg;
                         matrizPorts[y].push_back(stoi(puerto));
                     }
                     
                     vector<int> helperPorts;
                     for (int x = 0; x < (matrizSocket.size()); x++){
-                        get_request(&req, matrizSocket[matrizSocket.size()-1][x]);
+                        get_request(&req, matrizSocket[matrizSocket.size() - 1][x]);
                         string puerto = req.msg;
                         helperPorts.push_back(stoi(puerto));
                     }
@@ -310,12 +275,12 @@ void server_accept_conns(int s)
                     
                     conectar_Vecinos(matrizPorts, matrizSocket);
                    
-                    for (int y = 0; y < (matrizSocket.size()-1); y++){
+                    for (int y = 0; y < (matrizSocket.size() - 1); y++){
                         struct request req;
                             
                         strncpy(req.type, "SETEATE", 8);
                         strncpy(req.msg, "dale wachin", MENSAJE_MAXIMO);
-                        send_request(&req, matrizSocket[y][matrizSocket.size()-1]);
+                        send_request(&req, matrizSocket[y][matrizSocket.size() - 1]);
                         sleep(1);
                     }
                     
@@ -324,7 +289,7 @@ void server_accept_conns(int s)
                             
                         strncpy(req.type, "SETEATE", 8);
                         strncpy(req.msg, "dale wachin", MENSAJE_MAXIMO);
-                        send_request(&req, matrizSocket[matrizSocket.size()-1][x]);
+                        send_request(&req, matrizSocket[matrizSocket.size() - 1][x]);
                         sleep(1);
                     }
                     
@@ -335,7 +300,6 @@ void server_accept_conns(int s)
                 threads.push_back(thread(timer, matrizSocket, ref(sigo)));
                 
             }
-            
         }
     }
     for (int i = 0; i < threads.size(); i++)

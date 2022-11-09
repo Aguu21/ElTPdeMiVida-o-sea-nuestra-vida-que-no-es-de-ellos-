@@ -1,7 +1,5 @@
 #include "header.h"
-
 using namespace std;
-
 
 // Asumiendo servidor en ip local, y dado un puerto, establece una conexion
 // con el destino retornando un socket en estado conectado en caso de exito
@@ -23,7 +21,6 @@ int connect_socket(int puerto)
     inet_pton(AF_INET, "127.0.0.1", &(remote.sin_addr));
 
     /* Conectarse. */
-
     s = connect(socket_nuevo, (struct sockaddr *)&remote, sizeof(remote));
     if (s == -1) {
         perror("conectandose entre clientes");
@@ -31,20 +28,20 @@ int connect_socket(int puerto)
     }
     return socket_nuevo;
 }
+
 int powInt(int x, int y)
 {
-    for (int i = 0; i < y; i++)
-    {
+    for (int i = 0; i < y; i++){
         x *= 10;
     }
     return x;
 }
+
 int parseInt(char* chars)
 {
     int sum = 0;
     int len = strlen(chars);
-    for (int x = 0; x < len; x++)
-    {
+    for (int x = 0; x < len; x++){
         int n = chars[len - (x + 1)] - '0';
         sum = sum + powInt(n, x);
     }
@@ -72,17 +69,14 @@ void calcularEstadito(vector<int> estadosVecinos, int &estado)
     int vivos;
     
     for (int i= 0; i < estadosVecinos.size(); i++){
-        if (estadosVecinos[i] == 1)
-        {
+        if (estadosVecinos[i] == 1){
             vivos++;
         }
-        
     }
     if (estado == 0 && vivos == 3){
         estado = 1;
     }
-    else if(estado == 1 && (vivos < 2 || vivos > 3))
-    {
+    else if(estado == 1 && (vivos < 2 || vivos > 3)){
         estado = 0;
     }
 }
@@ -95,8 +89,8 @@ void client_accept_conns(int s, vector<int> &listListen)
     
     while(1)
     {
-        int socketNuevo = accept(s, (struct sockaddr *) &remote, (socklen_t *) &t);
         /* Aceptar nueva celula*/
+        int socketNuevo = accept(s, (struct sockaddr *) &remote, (socklen_t *) &t);
         if(socketNuevo == -1){
             perror("Error aceptando");
             exit(1);
@@ -110,18 +104,19 @@ void client_connects(vector<int> Portslist, vector<int> &sVecinos, vector<int> &
         for(int i = 0; i < Portslist.size(); i++){
             sVecinos.push_back(connect_socket(Portslist[i]));
         }
-        newPortlist=Portslist;
+        newPortlist = Portslist;
         primeraVez = false;
     }
     else{
         vector<int> helper;
         int z = 0;
+        //Repasa la lista de puertos que ya tenia y lo compara con la nueva,
+        //agregando solo los puertos nuevos.
         for(int i = 0; i < (Portslist.size()); i++){
             for(int j = 0; j < newPortlist.size(); j++){
                 if(Portslist[i] == newPortlist[j]){
                     z+=1;
                 }
-
             }
             if (z < 1){
                 helper.push_back(Portslist[i]);
@@ -139,12 +134,10 @@ void client_connects(vector<int> Portslist, vector<int> &sVecinos, vector<int> &
     }
 }
 
-
 int main(int argc, char* argv[]){
     int socket_fd;
     struct sockaddr_in  remote;
     struct sockaddr_in local;
-    struct in_addr addr;
 	vector<thread> threads;
     vector<int> Portslist;
     vector<int> sVecinos;
@@ -154,6 +147,7 @@ int main(int argc, char* argv[]){
     int s;
     int s_listen;
     int estado;
+
     /* crea socket */
     if ((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
         perror("creando socket");
@@ -199,12 +193,14 @@ int main(int argc, char* argv[]){
     threads.push_back(thread(client_accept_conns, s_listen, ref(lVecinos)));
 
     struct request req;
+    vector<int> estadosVecinos;
     string puerto = to_string(puerto_Socket);
+    
     strncpy(req.type, "PORT", 6);
     strncpy(req.msg, puerto.c_str(), sizeof(puerto.c_str()));
     send_request(&req, socket_fd);
     cout << req.msg << endl;
-    vector<int> estadosVecinos;
+    
     while(1) {
         struct request roq;
         
@@ -222,33 +218,24 @@ int main(int argc, char* argv[]){
                     var+=x;
                 }
             }
-            cout << "Los puertos son:";
-            for(int i = 0; i < Portslist.size(); i++){
-                cout << Portslist[i];
-                cout << " ";
-            }
-            cout << "" << endl;
+
             threads.push_back(thread(client_connects, Portslist, ref(sVecinos),ref(newPortlist), ref(primeraVez)));
-            
-            
 		}
+
         /* El server les manda a todos los clientes que se seteen un estado aleatorio*/
         if(strncmp(roq.type, "SETEATE", 8) == 0){
-            
             srand(getpid());
             estado = rand() % 2;
-            
             struct request ruq;
+
             strncpy(ruq.type, "ESTADO", 6);
             strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
             send_request(&ruq, socket_fd);
-            
         }
         /* El server les manda el tick y se fija en que estados estan sus vencinos*/
         if(strncmp(roq.type, "TICK", 8) == 0){
-            
-
             estadosVecinos.clear();
+
             for(int o = 0; o < lVecinos.size(); o++){
                 struct request ruq;
                 strncpy(ruq.type, "ESTADOVECINO", 12);
@@ -256,7 +243,6 @@ int main(int argc, char* argv[]){
             
                 send_request(&ruq, lVecinos[o]);
             }
-                
             
             for(int i = 0; i < sVecinos.size(); i++){
                 struct request req;
@@ -264,13 +250,14 @@ int main(int argc, char* argv[]){
                 int help = parseInt(req.msg);
                 estadosVecinos.push_back(help);
             }
+
             calcularEstadito(estadosVecinos, ref(estado));
+            
             struct request ruq;
             strncpy(ruq.type, "ESTADO", 6);
             strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
             send_request(&ruq, socket_fd);
         }
-       
     }
     
 	for (int i = 0; i < threads.size(); i++)

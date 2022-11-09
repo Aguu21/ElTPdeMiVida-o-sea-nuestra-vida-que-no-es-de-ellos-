@@ -14,10 +14,10 @@ int main(int argc, char const *argv[])
     vector<int> ports;
     bool test;
     int cant = 0;
-    for (size_t i = 0; i < 9; i++)
+    for (size_t i = 0; i < atoi(argv[1]); i++)
     {
         test = false;
-        int port = 1025 + (rand()%128);
+        int port = 4000 + (rand()%128);
         if(ports.size() != 0){
             while (test == false){
                 for (int i = 0; i < ports.size(); i++){
@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
                 }
                 if (cant != 0){
                     cant = 0;
-                    port = 1025 + (rand()%128);
+                    port = 4000 + (rand()%128);
                     
                 }
                 else{

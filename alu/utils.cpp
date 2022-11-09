@@ -5,8 +5,8 @@
 // almacena en req. La funcion es bloqueante
 void get_request(struct request* req, int s)
 {
-    char charR[MENSAJE_MAXIMO+10];
-    int n = recv(s, charR,MENSAJE_MAXIMO+10, 0);
+    char charR[MENSAJE_MAXIMO];
+    int n = recv(s, charR,MENSAJE_MAXIMO, 0);
     if (n < 0 ){
         perror("error recibiendo");
         exit(1);
@@ -18,6 +18,7 @@ void get_request(struct request* req, int s)
 
 void send_request(struct request* req, int s){
     int socket = send(s, (char *) req , MENSAJE_MAXIMO, 0);
+
     if ( socket < 0) { 
     	perror("error enviando");
     }
@@ -27,8 +28,8 @@ void send_request(struct request* req, int s){
 // envía a traves de todos los sockets la request.
 void broadcast(vector<int>& sockets, struct request* req)
 {
-    for (int i = 0; i < sockets.size(); i++)
-    {
+    //No lo usamos al final
+    for (int i = 0; i < sockets.size(); i++){
         send(sockets[i], (struct request*) req, MENSAJE_MAXIMO,0);
     }  
 }
@@ -37,6 +38,7 @@ void broadcast(vector<int>& sockets, struct request* req)
 // agrega los sockets asociados al vector v.
 void accept_conns(int s, vector<int>& v)
 {
+    //Lo personalizamos para cada cliente y servidor, por separado
     int socketNuevo;
 	struct sockaddr_in remote;
 	socklen_t client_len;
@@ -50,6 +52,7 @@ void accept_conns(int s, vector<int>& v)
 		
 	}
 }
+
 // Dado un puerto lsn_port devuelve un socket en estado listen asociado
 // a todas las interfaces de red local y a ese puerto (ej 127.0.0.1:lsn_port)
 int set_acc_socket(int lsn_port)
