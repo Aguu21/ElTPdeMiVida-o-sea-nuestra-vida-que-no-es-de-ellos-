@@ -48,22 +48,6 @@ int parseInt(char* chars)
     return sum;
 }
 
-// Dada una lista de puertos de vecinos, conecta el cliente con cada vecino
-// agregando cada socket al vector de sockets
-void con2neigh(string list, vector<int>& sockets)
-{
-    // TO DO
-}
-
-// Dado el estado actual de la celula y el estado de los vecinos en una ronda
-// computa el nuevo estado de la celula segun las reglas del juego
-bool set_state(bool alive, const vector<int>& cl)
-{
-	// TO DO
-
-    return true;
-}
-
 void calcularEstadito(vector<int> estadosVecinos, int &estado)
 {
     int vivos;
@@ -148,6 +132,9 @@ int main(int argc, char* argv[]){
     int s_listen;
     int estado;
 
+    /* configura dirección */
+    int puerto_Socket = atoi(argv[1]);
+    
     /* crea socket */
     if ((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
         perror("creando socket");
@@ -171,8 +158,6 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    /* configura dirección */
-    int puerto_Socket = atoi(argv[1]);
     local.sin_family = AF_INET;
     local.sin_port = htons(puerto_Socket);
     local.sin_addr.s_addr = INADDR_ANY;
@@ -195,12 +180,11 @@ int main(int argc, char* argv[]){
     struct request req;
     vector<int> estadosVecinos;
     string puerto = to_string(puerto_Socket);
-    
+    int contador = 0;
     strncpy(req.type, "PORT", 6);
     strncpy(req.msg, puerto.c_str(), sizeof(puerto.c_str()));
     send_request(&req, socket_fd);
     cout << req.msg << endl;
-    
     while(1) {
         struct request roq;
         
@@ -223,22 +207,23 @@ int main(int argc, char* argv[]){
 		}
 
         /* El server les manda a todos los clientes que se seteen un estado aleatorio*/
-        if(strncmp(roq.type, "SETEATE", 8) == 0){
+        else if(strncmp(roq.type, "SETEATE", 8) == 0){
             srand(getpid());
             estado = rand() % 2;
             struct request ruq;
-
-            strncpy(ruq.type, "ESTADO", 6);
+            strncpy(ruq.type, "ESTADO", 7);
             strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
             send_request(&ruq, socket_fd);
         }
         /* El server les manda el tick y se fija en que estados estan sus vencinos*/
-        if(strncmp(roq.type, "TICK", 8) == 0){
+        else if(strncmp(roq.type, "TICK", 5) == 0){
+        
+            
             estadosVecinos.clear();
-
+            
             for(int o = 0; o < lVecinos.size(); o++){
                 struct request ruq;
-                strncpy(ruq.type, "ESTADOVECINO", 12);
+                strncpy(ruq.type, "ESTADOVECINO", 13);
                 strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
             
                 send_request(&ruq, lVecinos[o]);
@@ -247,17 +232,21 @@ int main(int argc, char* argv[]){
             for(int i = 0; i < sVecinos.size(); i++){
                 struct request req;
                 get_request(&req, sVecinos[i]);
+                
                 int help = parseInt(req.msg);
                 estadosVecinos.push_back(help);
             }
-
+            
             calcularEstadito(estadosVecinos, ref(estado));
             
             struct request ruq;
             strncpy(ruq.type, "ESTADO", 6);
             strncpy(ruq.msg, to_string(estado).c_str(), MENSAJE_MAXIMO);
             send_request(&ruq, socket_fd);
+            
         }
+        
+        
     }
     
 	for (int i = 0; i < threads.size(); i++)

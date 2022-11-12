@@ -107,6 +107,7 @@ int parseInt(char* chars)
 // Servicio draw: En cada tick, imprime el mapa con el estado de cada celula 
 void draw(vector<vector<int>> matrizEstados)
 {
+    cout << "\n";
     for (int y = 0; y < matrizEstados.size() ; y++){
         for (int x = 0; x < matrizEstados.size(); x++)
         {
@@ -117,7 +118,7 @@ void draw(vector<vector<int>> matrizEstados)
         cout << "" << endl;
 
     }
-    cout << "\n" << endl;
+    cout << "\n";
 }
 
 // Servicio timer: Cada cierto intervalo de tiempo publica un tick. 
@@ -125,6 +126,7 @@ void draw(vector<vector<int>> matrizEstados)
 
 void timer(vector<vector<int>> matrizSocket, bool &sigo)
 {
+    
     while(sigo){
         struct request req;
         vector<vector<int>> estados;
@@ -133,13 +135,16 @@ void timer(vector<vector<int>> matrizSocket, bool &sigo)
 
             vector<int> estadito;
             for(int j = 0; j < matrizSocket.size(); j++){
-                
+               
                 struct request req;
                 get_request(&req, matrizSocket[i][j]);
                 int help = parseInt(req.msg);
                 estadito.push_back(help);
+                
+
             }
             estados.push_back(estadito);
+
         }
         
         for (int y = 0; y < matrizSocket.size(); y++){
@@ -149,12 +154,13 @@ void timer(vector<vector<int>> matrizSocket, bool &sigo)
                 
                 strncpy(req.type, "TICK", 8);
                 strncpy(req.msg, "dale wachO", MENSAJE_MAXIMO);
-
+                
                 send_request(&req, matrizSocket[y][x]);
+                
             } 
         }
+        sleep(3);
         draw(estados);
-        sleep(5);
     }
 }
 
@@ -230,7 +236,9 @@ void server_accept_conns(int s)
                             send_request(&req, matrizSocket[y][x]);
                             sleep(1);
                         }       
-                    }      
+                    }
+                    sigo = true;
+                    threads.push_back(thread(timer, matrizSocket, ref(sigo)));  
                     /* El server lea manda a los clientes que se seteen un estado*/
                     
                 }
@@ -294,11 +302,9 @@ void server_accept_conns(int s)
                     }
                     
                     lvl+=1;
+                    sigo = true;
+                    threads.push_back(thread(timer, matrizSocket, ref(sigo)));
                 }
-                
-                sigo = true;
-                threads.push_back(thread(timer, matrizSocket, ref(sigo)));
-                
             }
         }
     }

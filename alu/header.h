@@ -45,10 +45,6 @@ struct request{
 	char msg[MENSAJE_MAXIMO];
 };
 
-// OPCIONAL
-struct client_request{
-	// TO DO
-};
 
 // Funciones utiles sugeridas
 int read_sock(int s);

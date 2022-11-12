@@ -1,14 +1,13 @@
 #include "header.h"
 
-
 // Dado un puntero a un request req y un socket s, recibe una request en s y la 
 // almacena en req. La funcion es bloqueante
 void get_request(struct request* req, int s)
 {
     char charR[MENSAJE_MAXIMO];
-    int n = recv(s, charR,MENSAJE_MAXIMO, 0);
+    int n = recv(s, charR, MENSAJE_MAXIMO, 0);
     if (n < 0 ){
-        perror("error recibiendo");
+        perror("\n error recibiendo: ");
         exit(1);
     }
 
@@ -20,7 +19,7 @@ void send_request(struct request* req, int s){
     int socket = send(s, (char *) req , MENSAJE_MAXIMO, 0);
 
     if ( socket < 0) { 
-    	perror("error enviando");
+    	perror("\n error enviando");
     }
 }
 
